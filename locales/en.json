@@ -1,0 +1,233 @@
+{
+  "header": {
+    "language": "EN",
+    "english": "English",
+    "thai": "ไทย"
+  },
+  "footer": {
+    "poweredBy": "Powered by:"
+  },
+  "buttons": {
+    "startCheckin": "START CHECK-IN",
+    "submit": "SUBMIT",
+    "confirm": "CONFIRM",
+    "addGuest": "+ ADD GUEST",
+    "deleteSelectedGuests": "DELETE SELECTED GUEST(S)",
+    "edit": "Edit",
+    "done": "Done",
+    "capture": "CAPTURE",
+    "retake": "RETAKE",
+    "finish": "FINISH",
+    "confirmCheckout": "CONFIRM CHECK-OUT",
+    "checkout": "CHECK OUT",
+    "cancel": "CANCEL",
+    "backToHome": "BACK TO HOME",
+    "confirmExtension": "CONFIRM EXTENSION",
+    "proceed": "PROCEED"
+  },
+  "welcome": {
+    "title": "READY TO BEGIN YOUR CHECK-IN?",
+    "subtitle": "Your seamless check-in experience starts here."
+  },
+ "enterCode": {
+  "title": "ENTER YOUR CONFIRMATION CODE",
+  "placeholder": "e.g., C12905721885",
+  "invalidFormat": "Please enter an 8-character code.",
+  "successMessage": "Code is valid! Loading reservation...",
+  "invalidOrExpired": "Invalid or expired code.",
+  "networkError": "Cannot connect to server. Please try again."
+}
+,
+"reservationDetails": {
+  "title": "Reservation Details",
+  "mainGuest": "Main Guest",
+  "email": "Email",
+  "numGuests": "Number of Guests",
+  "numGuestsValue": "{adults} Adults, {children} Children",
+  "stayDuration": "Stay Duration",
+  "from": "From:",
+  "to": "To:",
+  "checkIn": "Check-In",
+  "checkOut": "Check-Out",
+  "nights": "Nights",
+  "hours": "Hours",
+  "roomType": "Room Type",
+  "roomNumber": "Room Number",
+  "stayFrom": "From",
+  "stayTo": "To",
+  "duration": "Duration",
+  "checkInPending": "Check-In Pending",
+  "editMainGuest": "Edit main guest",
+  "roomCharge": "Room Charge",
+  "codeExpires": "Expires",
+
+  "agreement": "I agree to the privacy policy",
+  "readDetails": "Read details",
+
+  "retry": "Retry",
+  "enterCodeManually": "Enter code manually",
+  "noBookingFound": "No booking found. Please check your code or link.",
+
+  "rooms": "Rooms",
+  "nightsLabel": "Nights",
+
+
+  "guests": "Guests",
+  "accompanyingGuests": "Accompanying Guests",
+  "accompanyingGuestsCount": "Accompanying Guests: {count}",
+  "guestNumber": "Guest {number}",
+  "noRoomDetails": "No room details available.",
+  "loading": "Loading booking details…",
+  "missingToken": "Token not found for check-in.",
+  "missingBookingId": "Booking ID not found. Please go back.",
+  "invalidTokenOrId": "Unable to verify check-in link (invalid token/bookingId).",
+  "confirmError": "Confirm failed."
+}
+
+
+,
+  "reviewReservation": {
+    "title": "REVIEW RESERVATION DETAILS",
+    "mainGuest": "Main Guest:",
+    "email": "Email:",
+    "numGuests": "Number of Guests:",
+    "stayDuration": "Stay Duration:",
+    "nights": "Nights:",
+    "hours": "Duration:",
+    "roomType": "Room Type:"
+  },
+  "guestList": {
+    "title": "GUEST DETAILS",
+    "mainGuest": "Main Guest",
+    "newGuest": "New Guest",
+    "progress": "{progress}%",
+    "takePhoto": "Take Your Photo",
+    "captureDocument": "Capture Verification Document",
+    "verifiedImage": "Verified Image",
+    "verifiedDocument": "Verified Document",
+    "firstName": "First Name",
+    "lastName": "Last Name",
+    "idNumber": "ID Number",
+    "passportNumber": "Passport No.",
+    "nationality": "Nationality",
+    "gender": "Gender",
+    "currentAddress": "Current Address",
+    "dateOfArrival": "Date of Arrival",
+    "dateOfBirth": "Date of Birth",
+    "visaType": "Type of Visa",
+    "stayExpiryDate": "Expire date of stay",
+    "pointOfEntry": "Point of entry",
+    "tmCardNumber": "Arrival card TM.No.",
+    "footerText": "You can add up to 5 guests per room. Please ensure all guest details are accurate.",
+"deleteSelected": "DELETE SELECTED",
+  "deleteTitle": "REMOVE GUEST?",
+  "deleteMessage": "Are you sure you want to remove the selected guest(s) from the guest details?",
+  "deleteWarning": "This action cannot be undone.",
+  "confirmDelete": "CONFIRM",
+  "cancelDelete": "CANCEL"
+  },
+  "faceCapture": {
+    "title": "Position Your Face in the Frame for Verification",
+    "success": "Face Successfully Captured!",
+    "saved": "Saved!"
+  },
+  "documentType": {
+    "title": "CHOOSE DOCUMENT TYPE",
+    "thaiId": "Thai ID Card",
+    "thailand": "Thailand",
+    "passport": "Overseas Passport",
+    "international": "International"
+  },
+  "documentCapture": {
+    "title": "Align Your Document in the Frame for Verification",
+    "success": "Document Verified. Continue to Check In.",
+    "analyzing": "Analyzing Document...",
+    "analyzingSubtitle": "This may take a moment."
+  },
+  "checkinComplete": {
+    "title": "CHECK-IN COMPLETE",
+    "notification": "Your access code is essential. Please capture this screen to ensure smooth access to your room.",
+    "accessCode": "Access Code:",
+    "roomNumber": "Room Number",
+    "nights": "Nights",
+    "rooms": "Rooms",
+    "checkIn": "Check-In",
+    "checkOut": "Check-Out",
+    "floor": "Floor",
+    "from": "From",
+    "to": "To",
+    "copy": "Copy",
+    "copied": "Copied!",
+    "copyAccessCode": "Copy access code",
+    "assistance": "For urgent assistance, please visit the help desk or call our support team at 085-4422488"
+  },
+  "postCheckin": {
+    "title": "RESERVATION DETAILS",
+    "status": "Checked In",
+    "qrCodeLabel": "Reservation Details QR Code",
+    "mainGuest": "Main Guest:",
+    "email": "Email:",
+    "numGuests": "Number of Guests:",
+    "stayDuration": "Stay Duration:",
+    "nights": "Nights:",
+    "roomCharge": "Room Charge:",
+    "viewGuests": "View Guest Details",
+    "viewRoomAccess": "Room Access Information",
+    "extendStay": "Extend Stay",
+    "nightsLabel": "Nights"
+  },
+  "roomAccess": {
+    "title": "ROOM ACCESS INFORMATION"
+  },
+  "checkout": {
+    "title": "CONFIRM CHECK-OUT",
+    "warning": "Are you sure you want to check out now? Once confirmed, your stay will be officially completed."
+  },
+  "checkoutSuccess": {
+    "title": "Check-out Complete",
+    "line1": "Your stay has been officially completed. We've sent a receipt to your email.",
+    "line2": "Thank you for staying with Cloud9. We hope to see you again soon!"
+  },
+  "extendStay": {
+    "title": "EXTEND YOUR STAY",
+    "currentCheckout": "Current Checkout",
+    "newCheckout": "New Checkout",
+    "selectHours": "Select hours to extend:",
+    "hour": "+{hour} hr"
+  },
+  "privacyPolicy": {
+    "intro": "Welcome to Cloud9! To ensure a smooth and secure check-in experience, we kindly ask for your consent to collect and process your personal data in accordance with the <strong>Personal Data Protection Act (PDPA).</strong>",
+    "section1Title": "1. What Information We Collect",
+    "section1Text": "We collect the following information during your check-in:",
+    "section1List": [
+      "Full name and contact details (phone, email)",
+      "Identification document (e.g., passport or ID card)",
+      "Facial photo for identity verification",
+      "Date of birth and nationality",
+      "Booking and stay details"
+    ],
+    "section2Title": "2. Why We Collect It",
+    "section2Text": "We use your data to:",
+    "section2List": [
+      "Verify your identity (as required by Thai law)",
+      "Submit a <strong>TM30 residence notification</strong> to the Immigration Bureau, as required under Thai immigration regulations for foreign guests",
+      "Assign and send your room access code",
+      "Provide a fast and contactless check-in/check-out experience",
+      "Manage your booking and guest profile",
+      "Ensure security and personalized service during your stay"
+    ],
+    "section3Title": "3. How We Store and Protect Your Data",
+    "section3List": [
+      "All personal data is stored securely and encrypted.",
+      "Only authorized staff have access to your information.",
+      "Your data will be kept only as long as necessary to fulfill legal and service purposes."
+    ],
+    "section4Title": "4. Your Rights",
+    "section4Text": "You have the right to:",
+    "section4List": [
+      "Request to view, update, or delete your personal data",
+      "Withdraw your consent at any time",
+      "Contact us with any privacy concerns"
+    ]
+  }
+}

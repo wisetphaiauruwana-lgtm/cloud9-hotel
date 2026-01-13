@@ -1,0 +1,7 @@
+{
+  "name": "Cloud9 Hotel Check-in",
+  "description": "A seamless, automated check-in experience for hotel guests. Users can verify their booking, confirm guest details, and complete identity verification by capturing their photo and identification documents. The app uses OCR to streamline data entry, culminating in the issuance of a digital room access code.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
