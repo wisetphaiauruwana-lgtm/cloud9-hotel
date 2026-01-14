@@ -73,6 +73,7 @@ const CheckinCompleteScreen: React.FC<CheckinCompleteScreenProps> = ({
     'idle'
   );
   const [roomsFromApi, setRoomsFromApi] = useState<any[] | null>(null);
+  const [roomAccessMap, setRoomAccessMap] = useState<Record<string, string>>({});
 
   useEffect(() => {
     if (!token) return;
@@ -113,10 +114,43 @@ const CheckinCompleteScreen: React.FC<CheckinCompleteScreenProps> = ({
   /* ---------- Source of truth ---------- */
   const rooms = roomsFromApi ?? booking?.rooms ?? [];
 
+  useEffect(() => {
+    if (rooms.length === 0) return;
+
+    const hasAccessCode = rooms.some((r: any) =>
+      (r?.accessCode ?? r?.access_code ?? r?.room?.accessCode ?? r?.room?.access_code ?? '').toString().trim()
+    );
+    if (hasAccessCode) return;
+
+    let isActive = true;
+    apiService
+      .fetchAllRooms()
+      .then((list: any[]) => {
+        const map: Record<string, string> = {};
+        (list ?? []).forEach((rm: any) => {
+          const num = (rm?.roomNumber ?? rm?.room_number ?? rm?.roomCode ?? rm?.room_code ?? '').toString().trim();
+          const code = (rm?.accessCode ?? rm?.access_code ?? '').toString().trim();
+          if (num && code) map[num] = code;
+        });
+        if (isActive) setRoomAccessMap(map);
+      })
+      .catch((err) => {
+        console.error('[CheckinComplete] fetch rooms failed', err);
+        if (isActive) setRoomAccessMap({});
+      });
+
+    return () => {
+      isActive = false;
+    };
+  }, [rooms]);
+
   const accessCodeItems = rooms
     .map((r: any) => {
       const roomNumber = (r?.room?.roomNumber ?? r?.roomNumber ?? r?.room?.room_code ?? r?.room_code ?? '-').toString();
-      const code = (r?.accessCode ?? r?.access_code ?? r?.room?.accessCode ?? r?.room?.access_code ?? '').toString().trim();
+      const code =
+        (r?.accessCode ?? r?.access_code ?? r?.room?.accessCode ?? r?.room?.access_code ?? '').toString().trim() ||
+        roomAccessMap[roomNumber] ||
+        '';
       return { roomNumber, code };
     })
     .filter((item) => item.code);
