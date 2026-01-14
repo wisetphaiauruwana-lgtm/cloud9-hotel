@@ -173,6 +173,7 @@ const App: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [checkinToken, setCheckinToken] = useState<string | null>(null);
   const [guestListBookingId, setGuestListBookingId] = useState<number | null>(null);
+  const CHECKIN_BOOKING_ID_KEY = "checkin_booking_id";
 
   const { t } = useTranslation();
 
@@ -238,6 +239,10 @@ const App: React.FC = () => {
         if (realToken) setCheckinToken(String(realToken));
 
         setBooking(safeBooking);
+        try {
+          const bid = extractBookingId(safeBooking);
+          if (bid) localStorage.setItem(CHECKIN_BOOKING_ID_KEY, String(bid));
+        } catch { }
         setIsGuestListReadOnly(true);
         // ✅ สำคัญ: token ต้องเป็น token จริง
         if (realToken) {
@@ -321,6 +326,10 @@ const App: React.FC = () => {
         };
 
         setBooking(safeBooking);
+        try {
+          const bid = extractBookingId(safeBooking);
+          if (bid) localStorage.setItem(CHECKIN_BOOKING_ID_KEY, String(bid));
+        } catch { }
         setIsGuestListReadOnly(true);
         setCheckinToken(token);
         localStorage.setItem("checkin_token", token);
@@ -361,6 +370,9 @@ const App: React.FC = () => {
         ...bk,
         dbId: bookingId,
       });
+      try {
+        if (bookingId) localStorage.setItem(CHECKIN_BOOKING_ID_KEY, String(bookingId));
+      } catch { }
 
       const guestsRaw = bookingId
         ? await apiService.fetchGuests(bookingId).catch(() => [])
@@ -650,14 +662,14 @@ const App: React.FC = () => {
       saveGuestCache(bookingId, normalizeGuestsForDisplay(guests));
     }
 
-    if (updatedBooking) {
-      setBooking(prev => {
-        const prevB = prev ?? ({} as Booking);
+      if (updatedBooking) {
+        setBooking(prev => {
+          const prevB = prev ?? ({} as Booking);
 
-        const merged: Booking = {
-          ...prevB,
-          ...updatedBooking,
-          dbId: bookingId,
+          const merged: Booking = {
+            ...prevB,
+            ...updatedBooking,
+            dbId: bookingId,
 
           // ✅ ถ้า updated ไม่มี email/mainGuest ให้ใช้ของเดิม
           email:
@@ -680,12 +692,16 @@ const App: React.FC = () => {
 
         try {
           localStorage.setItem("checkedin_booking", JSON.stringify(merged));
+          if (bookingId) localStorage.setItem(CHECKIN_BOOKING_ID_KEY, String(bookingId));
         } catch { }
 
         return merged;
       });
     } else {
       setBooking(prev => (prev ? { ...prev, dbId: bookingId } : prev));
+      try {
+        if (bookingId) localStorage.setItem(CHECKIN_BOOKING_ID_KEY, String(bookingId));
+      } catch { }
     }
 
     navigateTo(Screen.CheckinComplete);
