@@ -194,12 +194,16 @@ const PostCheckinDetailsScreen: React.FC<PostCheckinDetailsScreenProps> = ({
   const resolvedBookingId = useMemo(() => {
     return (
       toNumberOrUndef(bookingId) ??
+      toNumberOrUndef(liveBooking?.dbId) ??
+      toNumberOrUndef(liveBooking?.id) ??
+      toNumberOrUndef(liveBooking?.bookingId) ??
+      toNumberOrUndef(liveBooking?.booking_id) ??
       toNumberOrUndef((booking as any)?.dbId) ??
       toNumberOrUndef((booking as any)?.id) ??
       toNumberOrUndef((booking as any)?.bookingId) ??
       toNumberOrUndef((booking as any)?.booking_id)
     );
-  }, [booking, bookingId]);
+  }, [booking, bookingId, liveBooking]);
 
 
   // --------------------

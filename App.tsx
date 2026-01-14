@@ -947,8 +947,19 @@ const App: React.FC = () => {
                   return;
                 }
 
-                const cached = loadGuestCache(rv);
-                setGuests(normalizeGuestsForDisplay(cached));
+                try {
+                  const resp: any = await apiService.fetchGuests(rv);
+                  const rawGuests = Array.isArray(resp) ? resp : (resp?.data ?? []);
+                  const uiGuests = rawGuests.map((g: any, idx: number) =>
+                    mapBackendGuestToUi(g, idx)
+                  );
+                  const cached = loadGuestCache(rv);
+                  const merged = mergeGuestsPreferCache(uiGuests, cached);
+                  setGuests(normalizeGuestsForDisplay(merged));
+                } catch {
+                  const cached = loadGuestCache(rv);
+                  setGuests(normalizeGuestsForDisplay(cached));
+                }
                 setGuestListBookingId(rv);
                 navigateTo(Screen.GuestList);
               })();
