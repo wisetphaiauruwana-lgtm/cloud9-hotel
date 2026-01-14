@@ -959,7 +959,13 @@ const App: React.FC = () => {
         );
 
       case Screen.RoomAccessInformation:
-        return <RoomAccessInformationScreen booking={booking!} onBack={() => navigateTo(Screen.PostCheckinDetails)} />;
+        return (
+          <RoomAccessInformationScreen
+            booking={booking!}
+            token={checkinToken}
+            onBack={() => navigateTo(Screen.PostCheckinDetails)}
+          />
+        );
 
       case Screen.Checkout:
         return <CheckoutScreen onConfirm={handleConfirmCheckout} onCancel={() => navigateTo(Screen.PostCheckinDetails)} />;

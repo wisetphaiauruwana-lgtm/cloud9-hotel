@@ -1,12 +1,14 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Booking } from '../../types';
 import Header from '../layout/Header';
 import Footer from '../layout/Footer';
 import { BellIcon } from '../icons/Icons';
 import { useTranslation } from '../../hooks/useTranslation';
+import { apiService } from '../../services/apiService';
 
 interface RoomAccessInformationScreenProps {
   booking: Booking;
+  token?: string | null;
   onBack: () => void;
 }
 
@@ -73,8 +75,10 @@ const screenStyles = {
 
 const RoomAccessInformationScreen: React.FC<
   RoomAccessInformationScreenProps
-> = ({ booking, onBack }) => {
+> = ({ booking, token, onBack }) => {
   const { t } = useTranslation();
+  const [roomsFromApi, setRoomsFromApi] = useState<any[] | null>(null);
+  const [bookingFromApi, setBookingFromApi] = useState<any | null>(null);
 
   /* ---------- Date helpers ---------- */
 
@@ -89,19 +93,76 @@ const RoomAccessInformationScreen: React.FC<
     )}, ${pad(d.getHours())}:${pad(d.getMinutes())}`;
   };
 
-  /* ===============================
-     ✅ SINGLE SOURCE OF TRUTH
-     Access Code (อันเดียว)
-  =============================== */
+  useEffect(() => {
+    if (!token) return;
 
-  const accessCode =
+    let isActive = true;
+    apiService
+      .getBookingByToken(token)
+      .then((resp: any) => {
+        const bk =
+          resp?.data?.booking ??
+          resp?.data ??
+          resp?.booking ??
+          resp;
+        const rooms = Array.isArray(bk?.rooms) ? bk.rooms : [];
+        if (isActive) {
+          setBookingFromApi(bk);
+          setRoomsFromApi(rooms);
+        }
+      })
+      .catch((err) => {
+        console.error('[RoomAccessInformation] fetch booking failed', err);
+        if (isActive) {
+          setBookingFromApi(null);
+          setRoomsFromApi(null);
+        }
+      });
+
+    return () => {
+      isActive = false;
+    };
+  }, [token]);
+
+  const rooms = roomsFromApi ?? booking?.rooms ?? [];
+
+  const accessCodeItems = rooms
+    .map((r: any) => {
+      const roomNumber = (r?.room?.roomNumber ?? r?.roomNumber ?? r?.room?.room_code ?? r?.room_code ?? '-').toString();
+      const code = (r?.accessCode ?? r?.access_code ?? r?.room?.accessCode ?? r?.room?.access_code ?? '').toString().trim();
+      return { roomNumber, code };
+    })
+    .filter((item) => item.code);
+
+  const fallbackAccessCode =
+    (bookingFromApi as any)?.accessCode ??
     (booking as any)?.accessCode ??
     booking?.referenceCode ??
     (booking as any)?.checkinCode ??
     (booking as any)?.checkin_code ??
     '-';
 
-  const rooms = booking?.rooms ?? [];
+  const accessCode =
+    accessCodeItems.map((i) => i.code).join(' / ') ||
+    fallbackAccessCode;
+
+  const stayFrom =
+    bookingFromApi?.stay?.from ??
+    (bookingFromApi as any)?.checkIn ??
+    (bookingFromApi as any)?.checkInDate ??
+    (booking as any)?.stay?.from ??
+    (booking as any)?.checkIn ??
+    (booking as any)?.checkInDate ??
+    '';
+
+  const stayTo =
+    bookingFromApi?.stay?.to ??
+    (bookingFromApi as any)?.checkOut ??
+    (bookingFromApi as any)?.checkOutDate ??
+    (booking as any)?.stay?.to ??
+    (booking as any)?.checkOut ??
+    (booking as any)?.checkOutDate ??
+    '';
 
   return (
     <div className={screenStyles.container}>
@@ -121,7 +182,7 @@ const RoomAccessInformationScreen: React.FC<
           </p>
         </div>
 
-        {/* ===== Access Code (ONE ONLY) ===== */}
+        {/* ===== Access Code ===== */}
         <div>
           <p className={screenStyles.accessCodeLabel}>
             {t('checkinComplete.accessCode') || 'Access Code'}
@@ -131,35 +192,48 @@ const RoomAccessInformationScreen: React.FC<
           </div>
         </div>
 
-        {/* ===== Rooms Info (Room + Floor only) ===== */}
+        {/* ===== Rooms Info ===== */}
         <div className={screenStyles.detailsContainer}>
-          {rooms.map((r, idx) => {
-            const roomAny = r as any;
-
-            const roomNumber =
-              r.room?.roomNumber ??
-              roomAny.roomNumber ??
-              '-';
-
-            return (
-              <div key={idx} className={screenStyles.roomBlock}>
+          {accessCodeItems.length > 0 ? (
+            accessCodeItems.map((item, idx) => (
+              <div key={`${item.roomNumber}-${idx}`} className={screenStyles.roomBlock}>
                 <DetailItem
                   label={t('checkinComplete.roomNumber') || 'Room Number'}
-                  value={roomNumber}
+                  value={item.roomNumber}
                 />
-                
+                <DetailItem
+                  label={t('checkinComplete.accessCode') || 'Access Code'}
+                  value={item.code}
+                />
               </div>
-            );
-          })}
+            ))
+          ) : (
+            rooms.map((r, idx) => {
+              const roomAny = r as any;
+              const roomNumber =
+                r.room?.roomNumber ??
+                roomAny.roomNumber ??
+                '-';
+
+              return (
+                <div key={idx} className={screenStyles.roomBlock}>
+                  <DetailItem
+                    label={t('checkinComplete.roomNumber') || 'Room Number'}
+                    value={roomNumber}
+                  />
+                </div>
+              );
+            })
+          )}
 
           <DetailItem
             label={t('checkinComplete.from') || 'From'}
-            value={formatDateTime(booking.stay?.from)}
+            value={formatDateTime(stayFrom)}
           />
 
           <DetailItem
             label={t('checkinComplete.to') || 'To'}
-            value={formatDateTime(booking.stay?.to)}
+            value={formatDateTime(stayTo)}
           />
         </div>
 
