@@ -86,12 +86,16 @@ const CheckinCompleteScreen: React.FC<CheckinCompleteScreenProps> = ({
   /* ---------- Source of truth ---------- */
   const rooms = booking?.rooms ?? [];
 
-  const accessCodes = rooms
-    .map((r: any) => (r?.accessCode ?? r?.access_code ?? r?.room?.accessCode ?? r?.room?.access_code ?? '').toString().trim())
-    .filter(Boolean);
+  const accessCodeItems = rooms
+    .map((r: any) => {
+      const roomNumber = (r?.room?.roomNumber ?? r?.roomNumber ?? r?.room?.room_code ?? r?.room_code ?? '-').toString();
+      const code = (r?.accessCode ?? r?.access_code ?? r?.room?.accessCode ?? r?.room?.access_code ?? '').toString().trim();
+      return { roomNumber, code };
+    })
+    .filter((item) => item.code);
 
   const accessCode =
-    accessCodes.join(' / ') ||
+    accessCodeItems.map((i) => i.code).join(' / ') ||
     booking?.referenceCode ??
     (booking as any)?.checkinCode ??
     (booking as any)?.checkin_code ??
@@ -160,13 +164,32 @@ const CheckinCompleteScreen: React.FC<CheckinCompleteScreenProps> = ({
               {t('checkinComplete.accessCode') || 'Access Code'}
             </p>
 
-            <div
-              onClick={accessCode !== '-' ? handleCopy : undefined}
-              className={styles.accessCodeBox}
-              title={token ? `token: ${token}` : undefined}
-            >
-              {accessCode}
-            </div>
+            {accessCodeItems.length > 0 ? (
+              <div className="space-y-2">
+                {accessCodeItems.map((item, idx) => (
+                  <div key={`${item.roomNumber}-${idx}`} className="flex items-center gap-3">
+                    <span className="text-sm sm:text-base md:text-lg font-medium text-gray-600 min-w-[80px]">
+                      {item.roomNumber}
+                    </span>
+                    <div
+                      onClick={handleCopy}
+                      className={styles.accessCodeBox}
+                      title={token ? `token: ${token}` : undefined}
+                    >
+                      {item.code}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div
+                onClick={accessCode !== '-' ? handleCopy : undefined}
+                className={styles.accessCodeBox}
+                title={token ? `token: ${token}` : undefined}
+              >
+                {accessCode}
+              </div>
+            )}
 
             {copyStatus === 'copied' && (
               <p className={styles.copiedText}>
