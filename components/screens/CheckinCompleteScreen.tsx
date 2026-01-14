@@ -84,13 +84,18 @@ const CheckinCompleteScreen: React.FC<CheckinCompleteScreenProps> = ({
   };
 
   /* ---------- Source of truth ---------- */
+  const rooms = booking?.rooms ?? [];
+
+  const accessCodes = rooms
+    .map((r: any) => (r?.accessCode ?? r?.access_code ?? r?.room?.accessCode ?? r?.room?.access_code ?? '').toString().trim())
+    .filter(Boolean);
+
   const accessCode =
+    accessCodes.join(' / ') ||
     booking?.referenceCode ??
     (booking as any)?.checkinCode ??
     (booking as any)?.checkin_code ??
     '-';
-
-  const rooms = booking?.rooms ?? [];
 
   const nights =
     rooms[0]?.nights ??
