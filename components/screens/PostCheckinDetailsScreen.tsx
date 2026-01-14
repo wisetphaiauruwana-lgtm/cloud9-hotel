@@ -92,6 +92,14 @@ const pickMainGuestFromBooking = (b: any): string => {
 const GUEST_CACHE_TTL_MS = 24 * 60 * 60 * 1000;
 const guestCacheKey = (bookingId: number) => `guest_cache_${bookingId}`;
 const CHECKIN_BOOKING_ID_KEY = "checkin_booking_id";
+const getBookingIdFromQuery = () => {
+  try {
+    const qs = new URLSearchParams(window.location.search);
+    return qs.get('bookingId');
+  } catch {
+    return null;
+  }
+};
 
 const loadGuestCache = (bookingId: number): any[] => {
   try {
@@ -193,8 +201,10 @@ const PostCheckinDetailsScreen: React.FC<PostCheckinDetailsScreenProps> = ({
   // Resolve bookingId
   // --------------------
   const resolvedBookingId = useMemo(() => {
+    const queryBookingId = toNumberOrUndef(getBookingIdFromQuery());
     const storedBookingId = toNumberOrUndef(localStorage.getItem(CHECKIN_BOOKING_ID_KEY));
     return (
+      queryBookingId ??
       storedBookingId ??
       toNumberOrUndef(bookingId) ??
       toNumberOrUndef(liveBooking?.dbId) ??
