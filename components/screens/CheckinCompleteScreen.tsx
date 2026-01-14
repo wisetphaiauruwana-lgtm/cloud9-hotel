@@ -157,9 +157,9 @@ const CheckinCompleteScreen: React.FC<CheckinCompleteScreenProps> = ({
 
   const accessCode =
     accessCodeItems.map((i) => i.code).join(' / ') ||
-    booking?.referenceCode ??
-    (booking as any)?.checkinCode ??
-    (booking as any)?.checkin_code ??
+    booking?.referenceCode ||
+    (booking as any)?.checkinCode ||
+    (booking as any)?.checkin_code ||
     '-';
 
   const nights =
