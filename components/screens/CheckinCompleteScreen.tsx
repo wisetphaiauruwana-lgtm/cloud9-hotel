@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Booking } from '../../types';
 import Header from '../layout/Header';
 import Footer from '../layout/Footer';
 import { BellIcon } from '../icons/Icons';
 import Button from '../ui/Button';
 import { useTranslation } from '../../hooks/useTranslation';
+import { apiService } from '../../services/apiService';
 
 interface CheckinCompleteScreenProps {
   booking: Booking | null;
@@ -71,6 +72,32 @@ const CheckinCompleteScreen: React.FC<CheckinCompleteScreenProps> = ({
   const [copyStatus, setCopyStatus] = useState<'idle' | 'copied' | 'failed'>(
     'idle'
   );
+  const [roomsFromApi, setRoomsFromApi] = useState<any[] | null>(null);
+
+  useEffect(() => {
+    if (!token) return;
+
+    let isActive = true;
+    apiService
+      .getBookingByToken(token)
+      .then((resp: any) => {
+        const bk =
+          resp?.data?.booking ??
+          resp?.data ??
+          resp?.booking ??
+          resp;
+        const rooms = Array.isArray(bk?.rooms) ? bk.rooms : [];
+        if (isActive) setRoomsFromApi(rooms);
+      })
+      .catch((err) => {
+        console.error('[CheckinComplete] fetch booking failed', err);
+        if (isActive) setRoomsFromApi(null);
+      });
+
+    return () => {
+      isActive = false;
+    };
+  }, [token]);
 
   const calculateNights = (from?: string, to?: string): number | null => {
     if (!from || !to) return null;
@@ -84,7 +111,7 @@ const CheckinCompleteScreen: React.FC<CheckinCompleteScreenProps> = ({
   };
 
   /* ---------- Source of truth ---------- */
-  const rooms = booking?.rooms ?? [];
+  const rooms = roomsFromApi ?? booking?.rooms ?? [];
 
   const accessCodeItems = rooms
     .map((r: any) => {
