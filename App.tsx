@@ -239,10 +239,6 @@ const App: React.FC = () => {
         if (realToken) setCheckinToken(String(realToken));
 
         setBooking(safeBooking);
-        try {
-          const bid = extractBookingId(safeBooking);
-          if (bid) localStorage.setItem(CHECKIN_BOOKING_ID_KEY, String(bid));
-        } catch { }
         setIsGuestListReadOnly(true);
         // ✅ สำคัญ: token ต้องเป็น token จริง
         if (realToken) {
@@ -326,10 +322,6 @@ const App: React.FC = () => {
         };
 
         setBooking(safeBooking);
-        try {
-          const bid = extractBookingId(safeBooking);
-          if (bid) localStorage.setItem(CHECKIN_BOOKING_ID_KEY, String(bid));
-        } catch { }
         setIsGuestListReadOnly(true);
         setCheckinToken(token);
         localStorage.setItem("checkin_token", token);
@@ -370,10 +362,6 @@ const App: React.FC = () => {
         ...bk,
         dbId: bookingId,
       });
-      try {
-        if (bookingId) localStorage.setItem(CHECKIN_BOOKING_ID_KEY, String(bookingId));
-      } catch { }
-
       const guestsRaw = bookingId
         ? await apiService.fetchGuests(bookingId).catch(() => [])
         : [];
