@@ -183,6 +183,7 @@ const App: React.FC = () => {
   const [isGuestListReadOnly, setIsGuestListReadOnly] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [checkinToken, setCheckinToken] = useState<string | null>(null);
+  const [allowReservationFromToken, setAllowReservationFromToken] = useState(false);
   const [guestListBookingId, setGuestListBookingId] = useState<number | null>(null);
   const CHECKIN_BOOKING_ID_KEY = "checkin_booking_id";
 
@@ -294,6 +295,7 @@ const App: React.FC = () => {
 
       // ✅ 2) เคสปกติ: ได้ token จริง
       setCheckinToken(token);
+      setAllowReservationFromToken(true);
       localStorage.setItem("checkin_token", token);
 
       const bkResp: any = await apiService.getBookingByToken(token);
@@ -343,6 +345,7 @@ const App: React.FC = () => {
         setBooking(safeBooking);
         setIsGuestListReadOnly(true);
         setCheckinToken(token);
+        setAllowReservationFromToken(true);
         localStorage.setItem("checkin_token", token);
 
         // ✅ สำคัญ: ห้าม setGuests([]) ทิ้ง ต้องโหลด guests
@@ -428,6 +431,7 @@ const App: React.FC = () => {
       if (!tokenFromUrl && !bookingIdFromUrl) return;
 
       if (tokenFromUrl) {
+        setAllowReservationFromToken(true);
         handleCodeSubmit(tokenFromUrl);
       } else {
         navigateTo(Screen.EnterCode);
@@ -873,7 +877,7 @@ const App: React.FC = () => {
         return <EnterCodeScreen onSubmit={handleCodeSubmit} error={error} onBack={() => navigateTo(Screen.Welcome)} />;
 
       case Screen.ReservationDetails:
-        if (HIDE_RESERVATION_PAGE) {
+        if (HIDE_RESERVATION_PAGE && !allowReservationFromToken) {
           return <EnterCodeScreen onSubmit={handleCodeSubmit} error={error} onBack={() => navigateTo(Screen.Welcome)} />;
         }
         return (
