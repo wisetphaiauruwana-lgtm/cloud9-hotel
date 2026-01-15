@@ -700,7 +700,6 @@ const handleUpdateGuestDetails = (guestId: string, details: Guest["details"]) =>
 
     const run = async () => {
       try {
-        if (isReadOnly) return;
         if (fetchedRef.current) return;
 
         const bid = toNumberOrUndef(finalBookingId ?? resolvedBookingId);
