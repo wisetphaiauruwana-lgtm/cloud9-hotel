@@ -140,7 +140,7 @@ const DocumentCaptureScreen: React.FC<DocumentCaptureScreenProps> = ({
 
   const renderVerifiedView = () => (
     <div className="flex flex-col items-center space-y-6">
-      <div className="relative w-full max-w-sm">
+      <div className="relative w-full max-w-[320px]">
         <div className="border-2 border-emerald-400 rounded-xl overflow-hidden">
           {capturedImage && (
             <img src={capturedImage} className="w-full object-contain" />
@@ -201,7 +201,7 @@ const DocumentCaptureScreen: React.FC<DocumentCaptureScreenProps> = ({
           <div
             className="
               w-full
-              max-w-sm
+              max-w-[320px]
               aspect-[85.6/54]
               bg-gray-100
               rounded-lg

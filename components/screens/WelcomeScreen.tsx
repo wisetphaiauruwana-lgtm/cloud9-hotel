@@ -19,7 +19,7 @@ const styles = {
   title: "text-xs font-bold tracking-[0.22em] text-gray-900",
   subtitle: "text-gray-500 text-xs leading-relaxed",
   buttonContainer: "px-6 pb-6 w-full flex justify-center",
-  buttonWrap: "w-full max-w-[280px]",
+  buttonWrap: "w-full max-w-[320px]",
 };
 
 const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart }) => {

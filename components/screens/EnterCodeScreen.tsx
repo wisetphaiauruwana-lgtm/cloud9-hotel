@@ -29,7 +29,7 @@ const styles = {
   successMessage: "text-emerald-600",
   icon: "w-4 h-4",
   labelText: "block text-xs text-gray-600 mb-1",
-  buttonWrap: "w-full max-w-[260px] mx-auto"
+  buttonWrap: "w-full max-w-[320px] mx-auto"
 };
 
 const normalizeCode = (s: string) => {

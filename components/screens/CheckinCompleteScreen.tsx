@@ -19,7 +19,7 @@ interface CheckinCompleteScreenProps {
 const styles = {
   container: 'flex flex-col min-h-screen bg-white',
   main: 'flex-grow flex justify-center px-4 sm:px-6 py-6',
-  content: 'w-full max-w-[768px] text-center space-y-6',
+  content: 'w-full max-w-[320px] text-center space-y-6',
 
   title: 'text-base sm:text-lg md:text-xl font-bold tracking-widest',
 
