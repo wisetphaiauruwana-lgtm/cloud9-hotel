@@ -51,32 +51,32 @@ const EditableField: React.FC<{
 };
 
 const guestListItemStyles = {
-  container: "bg-gray-50 rounded-2xl border border-gray-200",
-  header: "w-full flex justify-between items-center p-4 md:p-5 lg:p-6 text-left",
+  container: "bg-gray-50 rounded-xl border border-gray-200",
+  header: "w-full flex justify-between items-center px-4 py-3 text-left",
   guestInfoContainer: "flex items-center flex-1",
-  guestName: "font-bold md:text-lg lg:text-xl text-gray-900",
-  guestRole: "text-sm md:text-base lg:text-lg text-gray-500",
+  guestName: "font-semibold text-sm text-gray-900",
+  guestRole: "text-xs text-gray-500",
   guestNameContainer: "cursor-pointer",
   guestNameContainerDisabled: "",
   progressContainer: "flex items-center space-x-2",
-  progressText: "font-bold md:text-lg lg:text-xl",
-  progressComplete: "text-green-500",
-  progressIncomplete: "text-amber-500",
-  content: "px-4 md:px-5 lg:p-6 pb-4 md:pb-5 lg:pb-6 border-t border-gray-100",
-  verifiedContainer: "pt-4 space-y-4",
-  imageGrid: "grid grid-cols-2 gap-4 md:gap-6 lg:gap-8 items-start",
-  imageLabel: "text-sm md:text-base lg:text-lg font-semibold text-gray-700 mb-1",
+  progressText: "font-semibold text-xs",
+  progressComplete: "text-emerald-600",
+  progressIncomplete: "text-red-500",
+  content: "px-4 pb-4 border-t border-gray-100",
+  verifiedContainer: "pt-3 space-y-3",
+  imageGrid: "grid grid-cols-2 gap-4 items-start",
+  imageLabel: "text-xs font-semibold text-gray-700 mb-1",
   verifiedImage: "rounded-lg w-full object-cover shadow-sm border border-gray-200",
   verifiedDocument: "rounded-lg w-full object-contain shadow-sm border border-gray-200",
   detailsContainer: "space-y-3 pt-2",
-  actionsContainer: "space-y-4 pt-4",
+  actionsContainer: "space-y-3 pt-3",
   actionRow: "flex justify-between items-center",
-  actionLabel: "text-sm md:text-base lg:text-lg font-semibold text-gray-800",
+  actionLabel: "text-xs font-semibold text-gray-800",
   actionLabelDisabled: "text-gray-400",
-  proceedButton: "bg-black text-white hover:bg-gray-800 px-5 py-2 rounded-lg text-sm font-semibold",
+  proceedButton: "bg-black text-white hover:bg-gray-800 px-3 py-1.5 rounded-md text-[11px] font-semibold tracking-wide",
   divider: "border-gray-100",
   imageWrapper: "relative",
-  retakeButton: "absolute bottom-2 right-2 bg-black/80 text-white text-xs font-bold py-1 px-2 rounded hover:bg-black backdrop-blur-sm transition-colors",
+  retakeButton: "absolute bottom-2 right-2 bg-black/80 text-white text-[10px] font-bold py-1 px-2 rounded hover:bg-black backdrop-blur-sm transition-colors",
 };
 
 interface GuestListItemProps {
@@ -343,16 +343,21 @@ const GuestListItem: React.FC<GuestListItemProps> = ({
 
 const guestListScreenStyles = {
   container: "flex flex-col min-h-screen bg-white",
-  main: "flex-grow p-6 md:p-8 lg:p-10 space-y-4",
-  header: "relative text-center",
-  title: "text-xl md:text-2xl lg:text-3xl font-bold text-gray-900",
-  editButtonContainer: "absolute right-0 top-0 bottom-0 flex items-center",
-  editButton: "font-semibold text-black text-base md:text-lg lg:text-xl px-2 py-1 hover:bg-gray-100 rounded-md",
-  listContainer: "space-y-4",
-  footer: "p-6 md:p-8 lg:p-10 text-center space-y-4",
-  footerText: "text-sm md:text-base lg:text-lg text-gray-500",
-  poweredByContainer: "pt-4 flex items-center justify-center space-x-1 text-gray-400 text-sm md:text-base lg:text-lg",
-  poweredByIcon: "w-5 h-5 lg:w-6 lg:h-6 text-black",
+  main: "flex-grow px-6 pb-4 pt-3 space-y-4",
+  header: "text-center space-y-2 max-w-[320px] mx-auto",
+  brand: "flex flex-col items-center gap-1",
+  brandText: "text-sm font-bold tracking-widest text-gray-900",
+  title: "text-xs font-bold tracking-[0.22em] text-gray-900",
+  editButtonContainer: "hidden",
+  editButton: "hidden",
+  listContainer: "space-y-3 max-w-[320px] mx-auto",
+  footer: "px-6 pb-6 text-center space-y-3",
+  footerText: "text-[11px] text-gray-500",
+  poweredByContainer: "pt-2 flex items-center justify-center space-x-1 text-gray-400 text-[11px]",
+  poweredByIcon: "w-4 h-4 text-black",
+  buttonWrap: "max-w-[320px] mx-auto w-full",
+  addButton: "!bg-black !text-white !rounded-md !py-2 !text-[11px] !tracking-widest",
+  confirmButton: "!bg-gray-300 !text-white !rounded-md !py-2 !text-[11px] !tracking-widest",
 };
 
 /* ---------------- types / helpers ---------------- */
@@ -950,24 +955,18 @@ const handleConfirmDeleteSelected = async () => {
 
   return (
     <div className={guestListScreenStyles.container}>
-      <Header onBack={onBack} />
+      <Header onBack={onBack} compact showLogo={false} showBorder={false} />
 
       <main className={guestListScreenStyles.main}>
         <div className={guestListScreenStyles.header}>
+          <div className={guestListScreenStyles.brand}>
+            <CloudIcon className="w-8 h-8 text-gray-900" />
+            <div className={guestListScreenStyles.brandText}>cloud9</div>
+          </div>
           <h1 className={guestListScreenStyles.title}>GUEST DETAILS</h1>
 
           {!isReadOnly && !isEditing && (
-            <div className={guestListScreenStyles.editButtonContainer}>
-              <button
-                className={guestListScreenStyles.editButton}
-                onClick={() => {
-                  setIsEditing(true);
-                  setSelectedGuestIds([]);
-                }}
-              >
-                Edit
-              </button>
-            </div>
+            <div className={guestListScreenStyles.editButtonContainer}></div>
           )}
         </div>
 
@@ -1014,13 +1013,15 @@ const handleConfirmDeleteSelected = async () => {
         {!isReadOnly && (
           <div className="space-y-4">
             {!isEditing && (
-              <Button
-                onClick={onAddGuest}
-                disabled={!canAddGuest || loading}
-                variant="secondary"
-              >
-                {t('buttons.addGuest')}
-              </Button>
+              <div className={guestListScreenStyles.buttonWrap}>
+                <Button
+                  onClick={onAddGuest}
+                  disabled={!canAddGuest || loading}
+                  className={guestListScreenStyles.addButton}
+                >
+                  {t('buttons.addGuest') || '+ ADD GUEST'}
+                </Button>
+              </div>
             )}
 
             {isEditing && (
@@ -1033,12 +1034,15 @@ const handleConfirmDeleteSelected = async () => {
             )}
 
             {!isEditing && (
-              <Button
-                onClick={handleConfirm}
-                disabled={!allVerified || loading || saving || !tokenUsed}
-              >
-                {saving ? (t('guestList.saving') || 'Saving...') : (t('buttons.confirm') || 'Confirm')}
-              </Button>
+              <div className={guestListScreenStyles.buttonWrap}>
+                <Button
+                  onClick={handleConfirm}
+                  disabled={!allVerified || loading || saving || !tokenUsed}
+                  className={guestListScreenStyles.confirmButton}
+                >
+                  {saving ? (t('guestList.saving') || 'Saving...') : (t('buttons.confirm') || 'CONFIRM')}
+                </Button>
+              </div>
             )}
 
             {isEditing && (
@@ -1058,7 +1062,8 @@ const handleConfirmDeleteSelected = async () => {
             {saveSuccess && <div className="text-sm text-green-600">{saveSuccess}</div>}
 
             <p className={guestListScreenStyles.footerText}>
-              {t('guestList.footerText')}
+              {t('guestList.footerText') ||
+                "You can add up to 5 guests per room. Please ensure all guest details are accurate."}
             </p>
           </div>
         )}
