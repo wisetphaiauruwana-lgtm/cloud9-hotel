@@ -293,19 +293,6 @@ const PostCheckinDetailsScreen: React.FC<PostCheckinDetailsScreenProps> = ({
   };
   }, [resolvedBookingId, liveBooking]);
 
-  // 🛡 กัน crash (หลัง hooks)
-  if (!booking && !liveBooking) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-screen gap-4">
-        <p className="text-gray-600">Booking not found</p>
-        <Button variant="secondary" onClick={onBack}>
-          Back
-        </Button>
-      </div>
-    );
-  }
-
-
   // --------------------
   // Extract Main Guest from guest list
   // ✅ FIX: รองรับทั้ง details camelCase และ snake_case
@@ -337,6 +324,19 @@ const PostCheckinDetailsScreen: React.FC<PostCheckinDetailsScreenProps> = ({
     baseBooking?.checkIn ||
     baseBooking?.from ||
     '';
+
+  const isMissingBooking = !booking && !liveBooking;
+
+  if (isMissingBooking) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen gap-4">
+        <p className="text-gray-600">Booking not found</p>
+        <Button variant="secondary" onClick={onBack}>
+          Back
+        </Button>
+      </div>
+    );
+  }
 
   const stayTo =
     baseBooking?.stay?.to ||
