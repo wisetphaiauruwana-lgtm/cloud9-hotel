@@ -418,17 +418,11 @@ const mapApiGuestsToUi = (raw: any): Guest[] => {
       (g.is_main_guest === true) ||
       (g.main_guest === true);
 
-    const firstNameRaw = g.details?.firstName ?? g.first_name ?? g.firstName ?? '';
-    const lastNameRaw = g.details?.lastName ?? g.last_name ?? g.lastName ?? '';
+    const firstName = g.details?.firstName ?? g.first_name ?? g.firstName ?? '';
+    const lastName = g.details?.lastName ?? g.last_name ?? g.lastName ?? '';
 
-    const fullNameRaw =
-      (g.full_name ?? g.fullName ?? g.name ?? `${firstNameRaw} ${lastNameRaw}`)?.toString().trim();
-
-    const nameParts = (fullNameRaw ?? '').trim().split(/\s+/).filter(Boolean);
-    const firstName = firstNameRaw || nameParts[0] || '';
-    const lastName = lastNameRaw || nameParts.slice(1).join(' ') || '';
-
-    const fullName = fullNameRaw || `${firstName} ${lastName}`.trim() || `Guest ${idx + 1}`;
+    const fullName =
+      (g.full_name ?? g.fullName ?? g.name ?? `${firstName} ${lastName}`)?.toString().trim() || `Guest ${idx + 1}`;
 
     const details = {
       ...(g.details || {}),
@@ -437,11 +431,11 @@ const mapApiGuestsToUi = (raw: any): Guest[] => {
       gender: g.details?.gender ?? g.gender ?? '',
       nationality: g.details?.nationality ?? g.nationality ?? '',
       dateOfBirth: g.details?.dateOfBirth ?? g.date_of_birth ?? g.dateOfBirth ?? '',
-      documentNumber: g.details?.documentNumber ?? g.id_number ?? g.idNumber ?? g.documentNumber ?? '',
+      documentNumber: g.details?.documentNumber ?? g.id_number ?? g.documentNumber ?? '',
       currentAddress: g.details?.currentAddress ?? g.current_address ?? g.currentAddress ?? '',
     };
 
-    const docTypeRaw = (g.documentType ?? g.id_type ?? g.idType ?? '').toString().toUpperCase();
+    const docTypeRaw = (g.documentType ?? g.id_type ?? '').toString().toUpperCase();
     const documentType =
       docTypeRaw.includes('PASSPORT') ? DocumentType.Passport :
         docTypeRaw.includes('ID') ? DocumentType.IDCard :
@@ -572,16 +566,6 @@ const GuestListScreen: React.FC<GuestListScreenProps> = ({
   }, [finalBookingId]);
 
   useEffect(() => {
-    if (!resolvedBookingId) return;
-    fetchedRef.current = false;
-    setGuests([]);
-    setFetchError(null);
-    setLoading(false);
-    setIsEditing(false);
-    setSelectedGuestIds([]);
-  }, [resolvedBookingId]);
-
-  useEffect(() => {
     const next =
       (location.state as any)?.token ??
       propToken ??
@@ -597,36 +581,39 @@ const GuestListScreen: React.FC<GuestListScreenProps> = ({
     let mounted = true;
 
     const run = async () => {
-      const token = tokenUsed ? String(tokenUsed).trim() : '';
+      const bid = toNumberOrUndef(finalBookingId); // ใช้ finalBookingId หรือ resolvedBookingId สำหรับดึงข้อมูล
 
-      if (token) {
-        try {
-          const bookingResp: any = await apiService.getBookingByToken(token);
-          const bid2 =
-            bookingResp?.bookingId ??
-            bookingResp?.booking_id ??
-            bookingResp?.data?.bookingId ??
-            bookingResp?.data?.booking_id ??
-            bookingResp?.id ??
-            bookingResp?.data?.id;
-
-          const bookingIdNum = toNumberOrUndef(bid2);
-          if (bookingIdNum && mounted) {
-            setResolvedBookingId(bookingIdNum);
-            return;
-          }
-        } catch (err) {
-          console.error('Error fetching booking by token', err);
-        }
+      // ถ้ามี finalBookingId ให้ใช้ค่าโดยตรง
+      if (bid) {
+        if (mounted) setResolvedBookingId(bid);
+        return;
       }
 
-      const bid = toNumberOrUndef(finalBookingId);
-      if (bid && mounted) setResolvedBookingId(bid);
+      if (isReadOnly) return;
+
+      const token = tokenUsed ? String(tokenUsed).trim() : ''; // ตรวจสอบ tokenUsed
+      if (!token) return;
+
+      try {
+        const bookingResp: any = await apiService.getBookingByToken(token); // ดึงข้อมูลจาก API ด้วย token
+        const bid2 =
+          bookingResp?.bookingId ??
+          bookingResp?.booking_id ??
+          bookingResp?.data?.bookingId ??
+          bookingResp?.data?.booking_id ??
+          bookingResp?.id ??
+          bookingResp?.data?.id;
+
+        const bookingIdNum = toNumberOrUndef(bid2); // แปลงเป็นตัวเลข
+        if (bookingIdNum && mounted) setResolvedBookingId(bookingIdNum); // ถ้ามี bookingId ให้เซ็ตค่า
+      } catch (err) {
+        console.error('Error fetching booking by token', err);
+      }
     };
 
     run();
-    return () => { mounted = false; };
-  }, [finalBookingId, tokenUsed]);
+    return () => { mounted = false; };  // Cleanup function เมื่อ component ถูกทำลาย
+  }, [finalBookingId, tokenUsed, isReadOnly]); // useEffect จะรันใหม่เมื่อ finalBookingId หรือ tokenUsed เปลี่ยนแปลง
 
   // ✅ hydrate จาก cache/props แค่ครั้งแรก แล้วให้ API fetch มาอัปเดตภายหลัง
   useEffect(() => {
@@ -915,9 +902,8 @@ const handleUpdateGuestDetails = (guestId: string, details: Guest["details"]) =>
   // ✅ FIX: ตัวนี้ใช้ render จริง (ViewGuests = isReadOnly)
   const displayGuests = useMemo(() => {
     const normalized = normalizeGuestsForDisplay(guests);
-    if (!isReadOnly) return normalized;
-    const meaningful = normalized.filter(isMeaningfulGuest);
-    return meaningful;
+    if (!isReadOnly) return normalized; // ถ้าไม่เป็น read-only ก็แสดงข้อมูลทั้งหมด
+    return normalized.filter(isMeaningfulGuest); // กรองข้อมูลที่มีการกรอกจริง
   }, [guests, isReadOnly]);
 
   // ✅ ลบผู้เข้าพักที่เลือก (ลบจาก state + cache + แจ้ง parent)

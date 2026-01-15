@@ -307,7 +307,6 @@ const PostCheckinDetailsScreen: React.FC<PostCheckinDetailsScreenProps> = ({
   }, [guestList]);
 
 
-
   // --------------------
   // Normalize display fields
   // --------------------
