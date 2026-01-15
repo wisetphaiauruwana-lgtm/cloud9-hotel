@@ -8,10 +8,15 @@ import { useTranslation } from '../../hooks/useTranslation';
 interface HeaderProps {
   onBack?: () => void;
   title?: string;
+  compact?: boolean;
+  showLogo?: boolean;
+  showBorder?: boolean;
 }
 
 const styles = {
-  header: "relative flex items-center justify-center p-4 md:p-6 lg:p-8 border-b border-gray-100 bg-white",
+  header: "relative flex items-center justify-center p-4 md:p-6 lg:p-8 bg-white",
+  headerCompact: "py-3 px-4",
+  headerBorder: "border-b border-gray-100",
   backButton: "absolute left-4 md:left-6 lg:left-8 text-gray-500 hover:text-black transition-colors",
   logoContainer: "flex items-center space-x-2 text-black",
   logoText: "font-bold text-2xl md:text-3xl",
@@ -21,7 +26,12 @@ const styles = {
   langOption: "px-4 py-2 text-left w-full text-gray-700 hover:bg-gray-50",
 };
 
-const Header: React.FC<HeaderProps> = ({ onBack }) => {
+const Header: React.FC<HeaderProps> = ({
+  onBack,
+  compact = false,
+  showLogo = true,
+  showBorder = true,
+}) => {
   const { language, setLanguage } = useLanguage();
   const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
@@ -43,17 +53,27 @@ const Header: React.FC<HeaderProps> = ({ onBack }) => {
   }, []);
 
 
+  const headerClass = [
+    styles.header,
+    compact ? styles.headerCompact : "",
+    showBorder ? styles.headerBorder : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
+
   return (
-    <header className={styles.header}>
+    <header className={headerClass}>
       {onBack && (
         <button onClick={onBack} className={styles.backButton}>
           <ArrowLeftIcon className="w-5 h-5 md:w-6 md:h-6 lg:w-7 lg:h-7" />
         </button>
       )}
-      <div className={styles.logoContainer}>
-        <CloudIcon className="w-7 h-7 md:w-8 md:h-8 lg:w-9 lg:h-9" />
-        <span className={styles.logoText}>cloud9</span>
-      </div>
+      {showLogo && (
+        <div className={styles.logoContainer}>
+          <CloudIcon className="w-7 h-7 md:w-8 md:h-8 lg:w-9 lg:h-9" />
+          <span className={styles.logoText}>cloud9</span>
+        </div>
+      )}
 
       <div className={styles.langSwitcher} ref={dropdownRef}>
         <button onClick={() => setIsOpen(!isOpen)} className={styles.langButton}>

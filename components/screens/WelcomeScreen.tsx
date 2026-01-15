@@ -4,6 +4,7 @@ import Header from '../layout/Header';
 import Footer from '../layout/Footer';
 import Button from '../ui/Button';
 import { useTranslation } from '../../hooks/useTranslation';
+import { CloudIcon } from '../icons/Icons';
 
 interface WelcomeScreenProps {
   onStart: () => void;
@@ -11,21 +12,27 @@ interface WelcomeScreenProps {
 
 const styles = {
   container: "flex flex-col min-h-screen bg-white",
-  main: "flex-grow flex flex-col items-center justify-center px-6 py-10 text-center",
-  content: "space-y-3 max-w-[360px]",
-  title: "text-base sm:text-lg font-bold tracking-[0.2em] text-gray-900",
-  subtitle: "text-gray-500 text-xs sm:text-sm leading-relaxed",
-  buttonContainer: "px-6 pb-8 w-full flex justify-center",
-  buttonWrap: "w-full max-w-[320px]",
+  main: "flex-grow flex flex-col items-center justify-center px-6 py-8 text-center",
+  content: "space-y-4 max-w-[320px]",
+  brand: "flex flex-col items-center gap-2",
+  brandText: "text-base font-bold tracking-widest text-gray-900",
+  title: "text-xs font-bold tracking-[0.22em] text-gray-900",
+  subtitle: "text-gray-500 text-xs leading-relaxed",
+  buttonContainer: "px-6 pb-6 w-full flex justify-center",
+  buttonWrap: "w-full max-w-[280px]",
 };
 
 const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart }) => {
   const { t } = useTranslation();
   return (
     <div className={styles.container}>
-      <Header />
+      <Header compact showLogo={false} showBorder={false} />
       <main className={styles.main}>
         <div className={styles.content}>
+          <div className={styles.brand}>
+            <CloudIcon className="w-8 h-8 text-gray-900" />
+            <div className={styles.brandText}>cloud9</div>
+          </div>
           <h1 className={styles.title}>{t('welcome.title') || "READY TO BEGIN YOUR CHECK-IN?"}</h1>
           <p className={styles.subtitle}>{t('welcome.subtitle') || "Your seamless check-in experience starts here."}</p>
         </div>
