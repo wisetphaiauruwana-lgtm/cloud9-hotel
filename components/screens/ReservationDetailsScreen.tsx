@@ -51,6 +51,10 @@ const styles = {
   brandText: 'text-sm font-bold tracking-widest text-gray-900',
   titleRow: 'flex items-center justify-between max-w-[320px] mx-auto w-full',
   titleIcons: 'flex items-center gap-3 text-gray-500',
+  iconButton:
+    'inline-flex h-7 w-7 items-center justify-center rounded-full border border-gray-200 text-gray-500 hover:text-black hover:border-gray-300 transition-colors',
+  iconButtonDisabled:
+    'inline-flex h-7 w-7 items-center justify-center rounded-full border border-gray-100 text-gray-300 cursor-not-allowed',
   statusPill:
     'inline-flex items-center rounded-full bg-amber-100 text-amber-700 px-3 py-1 text-[11px] font-semibold',
   footer:
@@ -594,8 +598,22 @@ const ReservationDetailsScreen: React.FC<ReservationDetailsScreenProps> = ({
         <div className={styles.titleRow}>
           <h1 className={styles.title}>{t('reservationDetails.title') || 'Reservation Details'}</h1>
           <div className={styles.titleIcons} aria-hidden="true">
-            <LocationIcon className="w-4 h-4" />
-            <PhoneIcon className="w-4 h-4" />
+            <button
+              type="button"
+              className={styles.iconButtonDisabled}
+              title="Hotel address not set"
+              aria-label="Map unavailable"
+            >
+              <LocationIcon className="w-4 h-4" />
+            </button>
+            <a
+              className={styles.iconButton}
+              href="tel:0932035150"
+              aria-label="Call hotel"
+              title="Call 0932035150"
+            >
+              <PhoneIcon className="w-4 h-4" />
+            </a>
           </div>
         </div>
         {booking && (
