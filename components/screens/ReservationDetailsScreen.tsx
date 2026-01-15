@@ -25,9 +25,9 @@ interface ReservationDetailsScreenProps {
 
 /* --- styles & small helpers --- */
 const detailRowStyles = {
-  container: 'py-2',
-  label: 'text-xs font-semibold text-gray-900',
-  value: 'mt-1 text-xs text-gray-800',
+  container: 'py-2 flex flex-col gap-1',
+  label: 'block text-xs font-semibold text-gray-900',
+  value: 'block text-xs text-gray-800',
   justifiedEnd: 'py-2',
 };
 
