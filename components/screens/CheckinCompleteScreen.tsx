@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Booking } from '../../types';
 import Header from '../layout/Header';
 import Footer from '../layout/Footer';
-import { BellIcon, CloudIcon } from '../icons/Icons';
+import { BellIcon } from '../icons/Icons';
 import Button from '../ui/Button';
 import { useTranslation } from '../../hooks/useTranslation';
 import { apiService } from '../../services/apiService';
@@ -19,42 +19,39 @@ interface CheckinCompleteScreenProps {
 const styles = {
   container: 'flex flex-col min-h-screen bg-white',
   main: 'flex-grow flex justify-center px-4 sm:px-6 py-6',
-  content: 'w-full max-w-[360px] text-center space-y-6',
+  content: 'w-full max-w-[768px] text-center space-y-6',
 
-  title: 'text-sm sm:text-base font-bold tracking-widest',
-
-  logoBlock: 'flex flex-col items-center gap-2',
-  logoText: 'text-lg font-bold tracking-wide text-gray-900',
+  title: 'text-base sm:text-lg md:text-xl font-bold tracking-widest',
 
   notificationBox:
-    'bg-gray-100 rounded-2xl px-4 sm:px-6 py-4 space-y-2',
+    'bg-gray-100 rounded-2xl px-4 sm:px-6 md:px-8 py-4 md:py-6 space-y-2',
 
-  bellIcon: 'w-6 h-6 text-amber-500',
+  bellIcon: 'w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 text-amber-500',
 
   notificationText:
-    'text-sm text-gray-700 leading-relaxed',
+    'text-sm sm:text-base md:text-lg text-gray-700 leading-relaxed',
 
   accessBlock: 'space-y-2 text-left',
-  accessLabel: 'text-sm font-semibold text-gray-700',
+  accessLabel: 'text-sm sm:text-base md:text-lg font-medium text-gray-600',
 
   accessCodeBox:
     'inline-flex items-center justify-center bg-emerald-500 text-white ' +
-    'text-xl font-bold tracking-widest ' +
+    'text-lg sm:text-xl md:text-2xl font-bold tracking-widest ' +
     'px-4 py-2 rounded-lg cursor-pointer select-none',
 
-  copiedText: 'text-xs text-emerald-600',
+  copiedText: 'text-xs sm:text-sm md:text-base text-emerald-600',
 
-  detailsBlock: 'text-left text-sm space-y-3',
+  detailsBlock: 'text-left text-sm sm:text-base md:text-lg space-y-4',
 
-  detailLabel: 'text-gray-600 font-semibold',
-  detailValue: 'text-gray-900',
+  detailLabel: 'text-gray-500',
+  detailValue: 'font-medium',
 
   roomItem: 'ml-2 text-gray-800',
 
   assistance:
-    'text-xs text-gray-500 pt-2 text-center',
+    'text-xs sm:text-sm md:text-base text-gray-500 pt-4 text-center',
 
-  footer: 'pt-2',
+  footer: 'p-6',
 };
 
 /* ===============================
@@ -173,35 +170,14 @@ const CheckinCompleteScreen: React.FC<CheckinCompleteScreenProps> = ({
     ) ??
     '-';
 
-  const formatDateTime = (value?: string) => {
-    if (!value) return '-';
-    const d = new Date(value);
-    if (Number.isNaN(d.getTime())) return value;
-    const yyyy = d.getFullYear();
-    const mm = String(d.getMonth() + 1).padStart(2, '0');
-    const dd = String(d.getDate()).padStart(2, '0');
-    const hh = String(d.getHours()).padStart(2, '0');
-    const mi = String(d.getMinutes()).padStart(2, '0');
-    return `${yyyy}-${mm}-${dd}, ${hh}:${mi}`;
-  };
-
-  const checkInRaw = booking?.stay?.from ?? (booking as any)?.checkIn ?? '';
-  const checkOutRaw = booking?.stay?.to ?? (booking as any)?.checkOut ?? '';
-  const checkIn = formatDateTime(checkInRaw);
-  const checkOut = formatDateTime(checkOutRaw);
-
-  const firstRoom = rooms[0];
-  const roomNumber =
-    (firstRoom as any)?.room?.roomNumber ??
-    (firstRoom as any)?.roomNumber ??
-    (firstRoom as any)?.room?.room_code ??
-    (firstRoom as any)?.room_code ??
+  const checkIn =
+    booking?.stay?.from?.split('T')[0] ??
+    (booking as any)?.checkIn?.split?.('T')?.[0] ??
     '-';
-  const roomFloor =
-    (firstRoom as any)?.room?.floor ??
-    (firstRoom as any)?.floor ??
-    (firstRoom as any)?.room?.floorName ??
-    (firstRoom as any)?.floorName ??
+
+  const checkOut =
+    booking?.stay?.to?.split('T')[0] ??
+    (booking as any)?.checkOut?.split?.('T')?.[0] ??
     '-';
 
   /* ---------- Copy ---------- */
@@ -223,14 +199,10 @@ const CheckinCompleteScreen: React.FC<CheckinCompleteScreenProps> = ({
   =============================== */
   return (
     <div className={styles.container}>
-      <Header compact showLogo={false} showBorder={false} />
+      <Header />
 
       <main className={styles.main}>
         <div className={styles.content}>
-          <div className={styles.logoBlock}>
-            <CloudIcon className="w-10 h-10 text-gray-900" />
-            <div className={styles.logoText}>cloud9</div>
-          </div>
 
           {/* Title */}
           <h1 className={styles.title}>
@@ -254,23 +226,32 @@ const CheckinCompleteScreen: React.FC<CheckinCompleteScreenProps> = ({
               {t('checkinComplete.accessCode') || 'Access Code'}
             </p>
 
-          {accessCodeItems.length > 0 ? (
-            <div
-              onClick={handleCopy}
-              className={styles.accessCodeBox}
-              title={token ? `token: ${token}` : undefined}
-            >
-              {accessCodeItems[0]?.code || accessCode}
-            </div>
-          ) : (
-            <div
-              onClick={accessCode !== '-' ? handleCopy : undefined}
-              className={styles.accessCodeBox}
-              title={token ? `token: ${token}` : undefined}
-            >
-              {accessCode}
-            </div>
-          )}
+            {accessCodeItems.length > 0 ? (
+              <div className="space-y-2">
+                {accessCodeItems.map((item, idx) => (
+                  <div key={`${item.roomNumber}-${idx}`} className="flex items-center gap-3">
+                    <span className="text-sm sm:text-base md:text-lg font-medium text-gray-600 min-w-[80px]">
+                      {item.roomNumber}
+                    </span>
+                    <div
+                      onClick={handleCopy}
+                      className={styles.accessCodeBox}
+                      title={token ? `token: ${token}` : undefined}
+                    >
+                      {item.code}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div
+                onClick={accessCode !== '-' ? handleCopy : undefined}
+                className={styles.accessCodeBox}
+                title={token ? `token: ${token}` : undefined}
+              >
+                {accessCode}
+              </div>
+            )}
 
             {copyStatus === 'copied' && (
               <p className={styles.copiedText}>
@@ -288,25 +269,40 @@ const CheckinCompleteScreen: React.FC<CheckinCompleteScreenProps> = ({
           <div className={styles.detailsBlock}>
             <div>
               <p className={styles.detailLabel}>
-                {t('checkinComplete.roomNumber') || 'Room Number'}:
+                {t('checkinComplete.nights') || 'Nights'}:
               </p>
-              <p className={styles.detailValue}>{roomNumber}</p>
+              <p className={styles.detailValue}>{nights}</p>
             </div>
+
             <div>
               <p className={styles.detailLabel}>
-                {t('checkinComplete.floor') || 'Floor'}:
+                {t('checkinComplete.rooms') || 'Rooms'}:
               </p>
-              <p className={styles.detailValue}>{roomFloor}</p>
+              <p className={styles.detailValue}>{rooms.length}</p>
             </div>
+
+            {rooms.map((r, idx) => {
+              const roomNumber = (r as any)?.room?.roomNumber ?? (r as any)?.roomNumber ?? '-';
+              const roomType = (r as any)?.room?.type ?? (r as any)?.roomType ?? '';
+
+              return (
+                <p key={idx} className={styles.roomItem}>
+                  {roomNumber}
+                  {roomType ? ` (${roomType})` : ''}
+                </p>
+              );
+            })}
+
             <div>
               <p className={styles.detailLabel}>
-                {t('checkinComplete.from') || 'From'}:
+                {t('checkinComplete.checkIn') || 'Check-in'}:
               </p>
               <p className={styles.detailValue}>{checkIn}</p>
             </div>
+
             <div>
               <p className={styles.detailLabel}>
-                {t('checkinComplete.to') || 'To'}:
+                {t('checkinComplete.checkOut') || 'Check-out'}:
               </p>
               <p className={styles.detailValue}>{checkOut}</p>
             </div>
@@ -320,8 +316,12 @@ const CheckinCompleteScreen: React.FC<CheckinCompleteScreenProps> = ({
         </div>
       </main>
       <div className={styles.footer}>
-        <Footer />
+        <Button onClick={onFinish}>
+          {t('buttons.finish') || 'Finish'}
+        </Button>
       </div>
+
+      <Footer />
     </div>
   );
 };
