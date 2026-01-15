@@ -586,6 +586,16 @@ const GuestListScreen: React.FC<GuestListScreenProps> = ({
   }, [finalBookingId]);
 
   useEffect(() => {
+    if (!resolvedBookingId) return;
+    fetchedRef.current = false;
+    setGuests([]);
+    setFetchError(null);
+    setLoading(false);
+    setIsEditing(false);
+    setSelectedGuestIds([]);
+  }, [resolvedBookingId]);
+
+  useEffect(() => {
     const next =
       (location.state as any)?.token ??
       propToken ??
@@ -601,39 +611,36 @@ const GuestListScreen: React.FC<GuestListScreenProps> = ({
     let mounted = true;
 
     const run = async () => {
-      const bid = toNumberOrUndef(finalBookingId); // ใช้ finalBookingId หรือ resolvedBookingId สำหรับดึงข้อมูล
+      const token = tokenUsed ? String(tokenUsed).trim() : '';
 
-      // ถ้ามี finalBookingId ให้ใช้ค่าโดยตรง
-      if (bid) {
-        if (mounted) setResolvedBookingId(bid);
-        return;
+      if (token) {
+        try {
+          const bookingResp: any = await apiService.getBookingByToken(token);
+          const bid2 =
+            bookingResp?.bookingId ??
+            bookingResp?.booking_id ??
+            bookingResp?.data?.bookingId ??
+            bookingResp?.data?.booking_id ??
+            bookingResp?.id ??
+            bookingResp?.data?.id;
+
+          const bookingIdNum = toNumberOrUndef(bid2);
+          if (bookingIdNum && mounted) {
+            setResolvedBookingId(bookingIdNum);
+            return;
+          }
+        } catch (err) {
+          console.error('Error fetching booking by token', err);
+        }
       }
 
-      if (isReadOnly) return;
-
-      const token = tokenUsed ? String(tokenUsed).trim() : ''; // ตรวจสอบ tokenUsed
-      if (!token) return;
-
-      try {
-        const bookingResp: any = await apiService.getBookingByToken(token); // ดึงข้อมูลจาก API ด้วย token
-        const bid2 =
-          bookingResp?.bookingId ??
-          bookingResp?.booking_id ??
-          bookingResp?.data?.bookingId ??
-          bookingResp?.data?.booking_id ??
-          bookingResp?.id ??
-          bookingResp?.data?.id;
-
-        const bookingIdNum = toNumberOrUndef(bid2); // แปลงเป็นตัวเลข
-        if (bookingIdNum && mounted) setResolvedBookingId(bookingIdNum); // ถ้ามี bookingId ให้เซ็ตค่า
-      } catch (err) {
-        console.error('Error fetching booking by token', err);
-      }
+      const bid = toNumberOrUndef(finalBookingId);
+      if (bid && mounted) setResolvedBookingId(bid);
     };
 
     run();
-    return () => { mounted = false; };  // Cleanup function เมื่อ component ถูกทำลาย
-  }, [finalBookingId, tokenUsed, isReadOnly]); // useEffect จะรันใหม่เมื่อ finalBookingId หรือ tokenUsed เปลี่ยนแปลง
+    return () => { mounted = false; };
+  }, [finalBookingId, tokenUsed]);
 
   // ✅ hydrate จาก cache/props แค่ครั้งแรก แล้วให้ API fetch มาอัปเดตภายหลัง
   useEffect(() => {
