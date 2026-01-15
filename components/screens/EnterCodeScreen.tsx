@@ -16,17 +16,17 @@ interface EnterCodeScreenProps {
 
 const styles = {
   container: "flex flex-col min-h-screen bg-white",
-  main: "flex-grow flex flex-col items-center justify-center p-6 md:p-10 lg:p-16 text-center",
-  form: "w-full max-w-xl space-y-6 md:space-y-8",
-  inputContainer: "space-y-2 md:space-y-3 lg:space-y-4 text-left",
-  title: "text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 text-center",
-  input: "w-full p-4 border border-gray-300 bg-white rounded-xl text-left text-base md:text-lg focus:ring-2 focus:ring-gray-500 focus:border-gray-500 transition-colors text-gray-900 placeholder:text-gray-400 shadow-sm",
-  messageBase: "flex items-center justify-center text-sm md:text-base lg:text-lg space-x-2",
-  errorMessage: "text-red-500",
-  successMessage: "text-green-500",
-  icon: "w-5 h-5 lg:w-6 lg:h-6",
-  labelText: "block text-sm text-gray-700 mb-1",
-  row: "flex flex-col sm:flex-row gap-4"
+  main: "flex-grow flex flex-col items-center justify-center px-6 py-10 text-center",
+  form: "w-full max-w-[360px] space-y-6",
+  inputContainer: "space-y-2 text-left",
+  title: "text-sm font-bold tracking-[0.2em] text-gray-900 text-center",
+  input: "w-full px-3 py-2 border border-gray-300 bg-white rounded-md text-left text-sm focus:ring-2 focus:ring-gray-400 focus:border-gray-400 transition-colors text-gray-900 placeholder:text-gray-400 shadow-sm",
+  messageBase: "flex items-center gap-2 text-xs",
+  errorMessage: "text-red-600",
+  successMessage: "text-emerald-600",
+  icon: "w-4 h-4",
+  labelText: "block text-xs text-gray-600 mb-1",
+  buttonWrap: "w-full max-w-[260px] mx-auto"
 };
 
 const normalizeCode = (s: string) => {
@@ -143,7 +143,7 @@ const EnterCodeScreen: React.FC<EnterCodeScreenProps> = ({ onSubmit, onBack, err
           <div className={styles.inputContainer}>
             <h1 className={styles.title}>{t('enterCode.title') || "ENTER YOUR CONFIRMATION CODE"}</h1>
 
-            <div style={{ maxWidth: 520, margin: '0 auto' }}>
+            <div>
               <label className={styles.labelText}>{t('enterCode.codeLabel') || "Confirmation Code"}</label>
               <input
                 type="text"
@@ -158,7 +158,6 @@ const EnterCodeScreen: React.FC<EnterCodeScreenProps> = ({ onSubmit, onBack, err
                 maxLength={12}
                 aria-label="confirmation-code"
               />
-              {/* not collecting lastName/booking# — only code is required in UI */}
             </div>
           </div>
 
@@ -186,7 +185,7 @@ const EnterCodeScreen: React.FC<EnterCodeScreenProps> = ({ onSubmit, onBack, err
             <pre className="text-xs text-gray-500 mt-2">{debugDetails}</pre>
           )}
 
-          <div style={{ display: "flex", gap: 12, justifyContent: "center" }}>
+          <div className={styles.buttonWrap}>
             <Button type="submit" disabled={isButtonDisabled}>
               {loading ? (t('buttons.loading') || "Checking...") : (t('buttons.submit') || "SUBMIT")}
             </Button>
