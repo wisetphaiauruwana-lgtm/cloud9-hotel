@@ -29,10 +29,11 @@
     "title": "READY TO BEGIN YOUR CHECK-IN?",
     "subtitle": "Your seamless check-in experience starts here."
   },
- "enterCode": {
-  "title": "ENTER YOUR CONFIRMATION CODE",
-  "placeholder": "e.g., C12905721885",
-  "invalidFormat": "Please enter an 8-character code.",
+  "enterCode": {
+    "title": "ENTER YOUR CONFIRMATION CODE",
+    "codeLabel": "Confirmation Code",
+    "placeholder": "e.g., C12905721885",
+    "invalidFormat": "Please enter an 8-character code.",
   "successMessage": "Code is valid! Loading reservation...",
   "invalidOrExpired": "Invalid or expired code.",
   "networkError": "Cannot connect to server. Please try again."
