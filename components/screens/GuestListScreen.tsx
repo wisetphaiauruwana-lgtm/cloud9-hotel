@@ -393,6 +393,15 @@ const getTokenFromQuery = () => {
   }
 };
 
+const getBookingIdFromQuery = () => {
+  try {
+    const qs = new URLSearchParams(window.location.search);
+    return qs.get('bookingId');
+  } catch {
+    return null;
+  }
+};
+
 // ✅ map response from backend -> Guest[]
 const mapApiGuestsToUi = (raw: any): Guest[] => {
   const list = raw?.data ?? raw?.guests ?? raw ?? [];
@@ -532,7 +541,8 @@ const GuestListScreen: React.FC<GuestListScreenProps> = ({
 
   // bookingId from state > prop
   const { bookingId: bookingIdFromState } = (location.state || {}) as { bookingId?: number };
-  const finalBookingId = bookingIdFromState ?? bookingId;
+  const bookingIdFromQuery = toNumberOrUndef(getBookingIdFromQuery());
+  const finalBookingId = bookingIdFromState ?? bookingId ?? bookingIdFromQuery;
 
   const initialToken =
     (location.state as any)?.token ??
@@ -761,7 +771,7 @@ const handleUpdateGuestDetails = (guestId: string, details: Guest["details"]) =>
 
     run();
     return () => { mounted = false; };
-  }, [finalBookingId, resolvedBookingId, tokenUsed, guests.length, isReadOnly]);
+  }, [finalBookingId, resolvedBookingId, tokenUsed, isReadOnly]);
 
   const handleRetry = () => {
     fetchedRef.current = false;

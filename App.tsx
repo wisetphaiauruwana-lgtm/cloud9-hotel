@@ -1044,6 +1044,19 @@ const App: React.FC = () => {
               setIsGuestListReadOnly(true);
               if (bookingIdArg) setGuestListBookingId(Number(bookingIdArg));
 
+              try {
+                const q = new URLSearchParams(window.location.search);
+                if (bookingIdArg) q.set("bookingId", String(bookingIdArg));
+                const newSearch = q.toString();
+                const newUrl =
+                  window.location.pathname +
+                  (newSearch ? `?${newSearch}` : "") +
+                  window.location.hash;
+                window.history.replaceState({}, document.title, newUrl);
+              } catch {
+                // ignore
+              }
+
               (async () => {
                 const rv =
                   extractBookingId({ dbId: bookingIdArg }) ??

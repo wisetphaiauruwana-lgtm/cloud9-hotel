@@ -23,7 +23,7 @@ export const saveGuestCache = (bookingId: number, guests: Guest[]) => {
       })),
     };
     localStorage.setItem(guestCacheKey(bookingId), JSON.stringify(payload));
-    console.log('Saving guests to cache:', guests);  // ตรวจสอบข้อมูลที่บันทึกลง cache
+    // debug log removed
   } catch (e) {
     console.warn("[guest-cache] save failed", e);
   }
@@ -40,7 +40,7 @@ export const loadGuestCache = (bookingId: number): Guest[] => {
       localStorage.removeItem(guestCacheKey(bookingId));  // ลบ cache ที่หมดอายุ
       return [];
     }
-    console.log('Loaded guests from cache:', parsed.guests);  // ตรวจสอบข้อมูลที่โหลดจาก cache
+    // debug log removed
     return Array.isArray(parsed?.guests) ? parsed.guests : [];
   } catch (e) {
     console.error('[guest-cache] load failed', e);
