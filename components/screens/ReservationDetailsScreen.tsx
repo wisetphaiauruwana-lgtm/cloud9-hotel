@@ -27,7 +27,7 @@ interface ReservationDetailsScreenProps {
 const detailRowStyles = {
   container: 'py-2',
   label: 'text-xs font-semibold text-gray-900',
-  value: 'mt-1 text-sm text-gray-800',
+  value: 'mt-1 text-xs text-gray-800',
   justifiedEnd: 'py-2',
 };
 
@@ -43,29 +43,24 @@ const DetailRow: React.FC<{ label: string; value?: React.ReactNode }> = ({
 
 const styles = {
   container: 'flex flex-col min-h-screen bg-white',
-  main: 'flex-grow px-6 pb-6 pt-4 md:px-8 lg:px-10 space-y-4',
+  main: 'flex-grow px-6 pb-6 pt-3 space-y-3',
   title: 'text-xs font-bold tracking-[0.22em] text-gray-900',
-  detailsCard: 'bg-white p-0 max-w-sm mx-auto w-full',
+  detailsCard: 'bg-white p-0 max-w-[320px] mx-auto w-full',
   divider: 'space-y-1',
-  brand: 'flex flex-col items-center gap-2 pt-2',
-  brandText: 'text-base font-bold tracking-widest text-gray-900',
-  titleRow: 'flex items-center justify-between max-w-sm mx-auto w-full',
+  brand: 'flex flex-col items-center gap-1 pt-1',
+  brandText: 'text-sm font-bold tracking-widest text-gray-900',
+  titleRow: 'flex items-center justify-between max-w-[320px] mx-auto w-full',
   titleIcons: 'flex items-center gap-3 text-gray-500',
   statusPill:
-    'inline-flex items-center rounded-full bg-amber-100 text-amber-700 px-3 py-1 text-xs font-semibold',
-  agreementContainer: 'flex items-start space-x-3',
-  checkbox:
-    'mt-1 h-4 w-4 md:h-5 md:w-5 lg:h-6 lg:w-6 bg-white border-gray-300 rounded text-black focus:ring-black',
-  agreementLabel: 'text-sm md:text-base lg:text-lg text-gray-600',
-  detailsLink: 'underline font-medium text-gray-900 hover:text-gray-700',
+    'inline-flex items-center rounded-full bg-amber-100 text-amber-700 px-3 py-1 text-[11px] font-semibold',
   footer:
-    'px-6 pb-6 pt-2 md:px-8 lg:px-10 bg-white',
+    'px-6 pb-6 pt-2 bg-white',
   helpRow: 'flex items-center gap-3 justify-center mt-3',
   inputLike:
-    'mt-1 flex items-center justify-between rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900',
-  confirmButton: 'rounded-full py-3 text-sm tracking-wide',
-  confirmWrap: 'max-w-sm mx-auto w-full',
-  statusWrap: 'max-w-sm mx-auto w-full',
+    'mt-1 flex items-center justify-between rounded-md border border-gray-300 bg-white px-3 py-2 text-xs text-gray-900',
+  confirmButton: 'rounded-md py-3 text-xs tracking-[0.2em]',
+  confirmWrap: 'max-w-[320px] mx-auto w-full',
+  statusWrap: 'max-w-[320px] mx-auto w-full',
 };
 
 /* safe getter that supports dotted paths */
@@ -319,7 +314,7 @@ const ReservationDetailsScreen: React.FC<ReservationDetailsScreenProps> = ({
     initialBooking ? mapBackendBookingToUi(initialBooking) : null
   );
 
-  const [agreed, setAgreed] = useState(false);
+  const [agreed, setAgreed] = useState(true);
   const [loading, setLoading] = useState(false);
   const [fetchError, setFetchError] = useState<string | null>(null);
 
@@ -590,7 +585,7 @@ const ReservationDetailsScreen: React.FC<ReservationDetailsScreenProps> = ({
 
   return (
     <div className={styles.container}>
-      <Header onBack={onBack} />
+      <Header onBack={onBack} compact showLogo={false} showBorder={false} />
       <main className={styles.main}>
         <div className={styles.brand}>
           <CloudIcon className="w-8 h-8 text-gray-900" />
@@ -759,30 +754,6 @@ const ReservationDetailsScreen: React.FC<ReservationDetailsScreenProps> = ({
           )}
         </div>
 
-        {/* Consent / Agreement */}
-        <div className={styles.agreementContainer}>
-          <input
-            type="checkbox"
-            id="terms"
-            checked={agreed}
-            onChange={(e) => setAgreed(e.target.checked)}
-            className={styles.checkbox}
-            disabled={!booking || loading}
-            aria-disabled={!booking || loading}
-            aria-checked={agreed}
-          />
-          <label htmlFor="terms" className={styles.agreementLabel}>
-            {t('reservationDetails.agreement') || 'I agree to the privacy policy'}{' '}
-            <button
-              type="button"
-              onClick={onShowPrivacyPolicy}
-              className={styles.detailsLink}
-              aria-label={t('reservationDetails.readDetails') || 'Read details'}
-            >
-              {t('reservationDetails.readDetails') || 'Read details'}
-            </button>
-          </label>
-        </div>
       </main>
 
       <div className={styles.footer}>
