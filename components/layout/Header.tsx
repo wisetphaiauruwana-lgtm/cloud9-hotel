@@ -14,7 +14,7 @@ interface HeaderProps {
 }
 
 const styles = {
-  header: "relative flex items-center justify-center p-4 md:p-6 lg:p-8 bg-white",
+  header: "w-full relative flex items-center justify-center p-4 md:p-6 lg:p-8 bg-white",
   headerCompact: "py-3 px-4",
   headerBorder: "border-b border-gray-100",
   backButton: "absolute left-4 md:left-6 lg:left-8 text-gray-500 hover:text-black transition-colors",
