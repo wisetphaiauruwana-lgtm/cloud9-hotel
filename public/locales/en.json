@@ -101,6 +101,7 @@
     "title": "GUEST DETAILS",
     "mainGuest": "Main Guest",
     "newGuest": "New Guest",
+    "edit": "Edit",
     "progress": "{progress}%",
     "takePhoto": "Take Your Photo",
     "captureDocument": "Capture Verification Document",
