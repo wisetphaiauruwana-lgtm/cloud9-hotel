@@ -31,6 +31,7 @@
   },
  "enterCode": {
   "title": "ENTER YOUR CONFIRMATION CODE",
+  "codeLabel": "Confirmation Code",
   "placeholder": "e.g., C12905721885",
   "invalidFormat": "Please enter an 8-character code.",
   "successMessage": "Code is valid! Loading reservation...",
