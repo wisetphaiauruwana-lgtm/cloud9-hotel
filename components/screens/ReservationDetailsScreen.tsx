@@ -7,7 +7,7 @@ import Button from '../ui/Button';
 import { useTranslation } from '../../hooks/useTranslation';
 import { apiService } from '../../services/apiService';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { CloudIcon, EditIcon } from '../icons/Icons';
+import { CloudIcon, EditIcon, LocationIcon, PhoneIcon } from '../icons/Icons';
 
 interface ReservationDetailsScreenProps {
   booking?: Booking | null;
@@ -25,10 +25,10 @@ interface ReservationDetailsScreenProps {
 
 /* --- styles & small helpers --- */
 const detailRowStyles = {
-  container: 'py-2 md:py-3 lg:py-4 border-b border-gray-100 last:border-0',
-  label: 'text-xs md:text-sm font-semibold tracking-wide text-gray-500',
-  value: 'mt-1 text-sm md:text-base text-gray-900',
-  justifiedEnd: 'py-2 md:py-3 lg:py-4 border-b border-gray-100',
+  container: 'py-2',
+  label: 'text-xs font-semibold text-gray-900',
+  value: 'mt-1 text-sm text-gray-800',
+  justifiedEnd: 'py-2',
 };
 
 const DetailRow: React.FC<{ label: string; value?: React.ReactNode }> = ({
@@ -43,12 +43,14 @@ const DetailRow: React.FC<{ label: string; value?: React.ReactNode }> = ({
 
 const styles = {
   container: 'flex flex-col min-h-screen bg-white',
-  main: 'flex-grow px-6 pb-8 pt-4 md:px-8 lg:px-10 space-y-5',
-  title: 'text-xs md:text-sm font-bold tracking-[0.22em] text-gray-900 text-left',
-  detailsCard: 'bg-white p-0',
+  main: 'flex-grow px-6 pb-6 pt-4 md:px-8 lg:px-10 space-y-4',
+  title: 'text-xs font-bold tracking-[0.22em] text-gray-900',
+  detailsCard: 'bg-white p-0 max-w-sm mx-auto w-full',
   divider: 'space-y-1',
   brand: 'flex flex-col items-center gap-2 pt-2',
   brandText: 'text-base font-bold tracking-widest text-gray-900',
+  titleRow: 'flex items-center justify-between max-w-sm mx-auto w-full',
+  titleIcons: 'flex items-center gap-3 text-gray-500',
   statusPill:
     'inline-flex items-center rounded-full bg-amber-100 text-amber-700 px-3 py-1 text-xs font-semibold',
   agreementContainer: 'flex items-start space-x-3',
@@ -57,10 +59,13 @@ const styles = {
   agreementLabel: 'text-sm md:text-base lg:text-lg text-gray-600',
   detailsLink: 'underline font-medium text-gray-900 hover:text-gray-700',
   footer:
-    'px-6 pb-8 pt-4 md:px-8 lg:px-10 sticky bottom-0 bg-white/95 backdrop-blur-sm border-t border-gray-100',
+    'px-6 pb-6 pt-2 md:px-8 lg:px-10 bg-white',
   helpRow: 'flex items-center gap-3 justify-center mt-3',
   inputLike:
-    'mt-1 flex items-center justify-between rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm',
+    'mt-1 flex items-center justify-between rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900',
+  confirmButton: 'rounded-full py-3 text-sm tracking-wide',
+  confirmWrap: 'max-w-sm mx-auto w-full',
+  statusWrap: 'max-w-sm mx-auto w-full',
 };
 
 /* safe getter that supports dotted paths */
@@ -591,8 +596,18 @@ const ReservationDetailsScreen: React.FC<ReservationDetailsScreenProps> = ({
           <CloudIcon className="w-8 h-8 text-gray-900" />
           <div className={styles.brandText}>cloud9</div>
         </div>
-        <h1 className={styles.title}>{t('reservationDetails.title') || 'Reservation Details'}</h1>
-        {booking && <div className={styles.statusPill}>{statusText}</div>}
+        <div className={styles.titleRow}>
+          <h1 className={styles.title}>{t('reservationDetails.title') || 'Reservation Details'}</h1>
+          <div className={styles.titleIcons} aria-hidden="true">
+            <LocationIcon className="w-4 h-4" />
+            <PhoneIcon className="w-4 h-4" />
+          </div>
+        </div>
+        {booking && (
+          <div className={styles.statusWrap}>
+            <div className={styles.statusPill}>{statusText}</div>
+          </div>
+        )}
 
         <div className={styles.detailsCard} role="region" aria-labelledby="reservation-details-heading">
           {loading ? (
@@ -771,9 +786,15 @@ const ReservationDetailsScreen: React.FC<ReservationDetailsScreenProps> = ({
       </main>
 
       <div className={styles.footer}>
-        <Button onClick={() => void handleConfirm()} disabled={!agreed || !booking || !tokenUsed || loading}>
-          {loading ? (t('buttons.processing') || 'Processing…') : (t('buttons.confirm') || 'Confirm')}
-        </Button>
+        <div className={styles.confirmWrap}>
+          <Button
+            onClick={() => void handleConfirm()}
+            disabled={!agreed || !booking || !tokenUsed || loading}
+            className={styles.confirmButton}
+          >
+            {loading ? (t('buttons.processing') || 'Processing…') : (t('buttons.confirm') || 'Confirm')}
+          </Button>
+        </div>
       </div>
 
       <Footer />
