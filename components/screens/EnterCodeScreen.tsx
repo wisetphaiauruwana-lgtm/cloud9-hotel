@@ -18,7 +18,7 @@ interface EnterCodeScreenProps {
 const styles = {
   container: "flex flex-col min-h-screen bg-white",
   main: "flex-grow flex flex-col items-center justify-center px-6 py-8 text-center",
-  form: "w-full max-w-[320px] space-y-6",
+  form: "w-full max-w-[360px] md:max-w-[600px] lg:max-w-[720px] space-y-6",
   inputContainer: "space-y-2 text-left",
   brand: "flex flex-col items-center gap-2",
   brandText: "text-base font-bold tracking-widest text-gray-900",
@@ -29,7 +29,7 @@ const styles = {
   successMessage: "text-emerald-600",
   icon: "w-4 h-4",
   labelText: "block text-xs text-gray-600 mb-1",
-  buttonWrap: "w-full max-w-[320px] mx-auto"
+  buttonWrap: "w-full max-w-[360px] md:max-w-[600px] lg:max-w-[720px] mx-auto"
 };
 
 const normalizeCode = (s: string) => {

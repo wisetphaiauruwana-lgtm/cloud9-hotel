@@ -45,11 +45,11 @@ const styles = {
   container: 'flex flex-col min-h-screen bg-white',
   main: 'flex-grow px-6 pb-6 pt-3 space-y-3',
   title: 'text-xs font-bold tracking-[0.22em] text-gray-900',
-  detailsCard: 'bg-white p-0 max-w-[320px] mx-auto w-full',
+  detailsCard: 'bg-white p-0 max-w-[360px] md:max-w-[600px] lg:max-w-[720px] mx-auto w-full',
   divider: 'space-y-1',
   brand: 'flex flex-col items-center gap-1 pt-1',
   brandText: 'text-sm font-bold tracking-widest text-gray-900',
-  titleRow: 'flex items-center justify-between max-w-[320px] mx-auto w-full',
+  titleRow: 'flex items-center justify-between max-w-[360px] md:max-w-[600px] lg:max-w-[720px] mx-auto w-full',
   titleIcons: 'flex items-center gap-3 text-gray-500',
   iconButton:
     'inline-flex h-7 w-7 items-center justify-center rounded-full border border-gray-200 text-gray-500 hover:text-black hover:border-gray-300 transition-colors',
@@ -63,8 +63,8 @@ const styles = {
   inputLike:
     'mt-1 flex items-center justify-between rounded-md border border-gray-300 bg-white px-3 py-2 text-xs text-gray-900',
   confirmButton: 'rounded-md py-3 text-xs tracking-[0.2em]',
-  confirmWrap: 'max-w-[320px] mx-auto w-full',
-  statusWrap: 'max-w-[320px] mx-auto w-full',
+  confirmWrap: 'max-w-[360px] md:max-w-[600px] lg:max-w-[720px] mx-auto w-full',
+  statusWrap: 'max-w-[360px] md:max-w-[600px] lg:max-w-[720px] mx-auto w-full',
 };
 
 /* safe getter that supports dotted paths */

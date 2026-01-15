@@ -13,13 +13,13 @@ interface WelcomeScreenProps {
 const styles = {
   container: "flex flex-col min-h-screen bg-white",
   main: "flex-grow flex flex-col items-center justify-center px-6 py-8 text-center",
-  content: "space-y-4 max-w-[320px]",
+  content: "space-y-4 max-w-[360px] md:max-w-[600px] lg:max-w-[720px]",
   brand: "flex flex-col items-center gap-2",
   brandText: "text-base font-bold tracking-widest text-gray-900",
   title: "text-xs font-bold tracking-[0.22em] text-gray-900",
   subtitle: "text-gray-500 text-xs leading-relaxed",
   buttonContainer: "px-6 pb-6 w-full flex justify-center",
-  buttonWrap: "w-full max-w-[320px]",
+  buttonWrap: "w-full max-w-[360px] md:max-w-[600px] lg:max-w-[720px]",
 };
 
 const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart }) => {
