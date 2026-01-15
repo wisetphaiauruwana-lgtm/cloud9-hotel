@@ -163,7 +163,18 @@ const normalizeGuestsForDisplay = (list: Guest[]) => {
 };
 
 const App: React.FC = () => {
-  const [screen, setScreen] = useState<Screen>(Screen.Welcome);
+  const SCREEN_STORAGE_KEY = "current_screen";
+  const [screen, setScreen] = useState<Screen>(() => {
+    try {
+      const stored = localStorage.getItem(SCREEN_STORAGE_KEY) as Screen | null;
+      if (stored && Object.values(Screen).includes(stored)) {
+        return stored;
+      }
+    } catch {
+      // ignore storage errors
+    }
+    return Screen.Welcome;
+  });
   const [booking, setBooking] = useState<Booking | null>(null);
   const [guests, setGuests] = useState<Guest[]>([]);
   const [activeGuestId, setActiveGuestId] = useState<string | null>(null);
@@ -181,6 +192,14 @@ const App: React.FC = () => {
     setError(null);
     setScreen(newScreen);
   }, []);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(SCREEN_STORAGE_KEY, String(screen));
+    } catch {
+      // ignore storage errors
+    }
+  }, [screen]);
 
   // handle code/token submission -> load booking + guests
   const handleCodeSubmit = async (token: string) => {
@@ -405,11 +424,63 @@ const App: React.FC = () => {
     try {
       const q = new URLSearchParams(window.location.search);
       const tokenFromUrl = q.get('token');
-      if (!tokenFromUrl) return;
+      const bookingIdFromUrl = q.get('bookingId');
+      if (!tokenFromUrl && !bookingIdFromUrl) return;
 
-      handleCodeSubmit(tokenFromUrl);
+      if (tokenFromUrl) {
+        handleCodeSubmit(tokenFromUrl);
+      } else if (bookingIdFromUrl && /^\d+$/.test(bookingIdFromUrl)) {
+        const bid = Number(bookingIdFromUrl);
+        (async () => {
+          try {
+            setIsLoading(true);
+            setError(null);
+            setIsGuestListReadOnly(true);
+            setGuestListBookingId(bid);
+
+            const bookingResp: any = await apiService.getBookingDetailsById(bid);
+            const safeBooking: Booking = {
+              ...(bookingResp as any),
+              dbId: bid,
+              stay: (bookingResp as any)?.stay ?? {
+                from:
+                  (bookingResp as any)?.checkIn ??
+                  (bookingResp as any)?.check_in ??
+                  '',
+                to:
+                  (bookingResp as any)?.checkOut ??
+                  (bookingResp as any)?.check_out ??
+                  '',
+              },
+            };
+            setBooking(safeBooking);
+
+            try {
+              const resp: any = await apiService.fetchGuests(bid);
+              const rawGuests = Array.isArray(resp) ? resp : (resp?.data ?? []);
+              const uiGuests = rawGuests.map((g: any, idx: number) =>
+                mapBackendGuestToUi(g, idx)
+              );
+              const cached = loadGuestCache(bid);
+              const merged = mergeGuestsPreferCache(uiGuests, cached);
+              setGuests(normalizeGuestsForDisplay(merged));
+            } catch {
+              const cached = loadGuestCache(bid);
+              setGuests(normalizeGuestsForDisplay(cached));
+            }
+
+            navigateTo(Screen.PostCheckinDetails);
+          } catch (e) {
+            console.warn('[App] load by bookingId failed', e);
+            setError('ไม่พบข้อมูลการจอง');
+          } finally {
+            setIsLoading(false);
+          }
+        })();
+      }
 
       q.delete('token');
+      q.delete('bookingId');
       const newSearch = q.toString();
       const newUrl = window.location.pathname + (newSearch ? `?${newSearch}` : '') + window.location.hash;
       window.history.replaceState({}, document.title, newUrl);
@@ -418,6 +489,39 @@ const App: React.FC = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    const bookingId =
+      extractBookingId(booking) ??
+      (guestListBookingId ?? undefined) ??
+      (() => {
+        try {
+          const raw = localStorage.getItem(CHECKIN_BOOKING_ID_KEY);
+          const n = Number(raw);
+          return Number.isNaN(n) ? undefined : n;
+        } catch {
+          return undefined;
+        }
+      })();
+    const token = checkinToken ?? localStorage.getItem("checkin_token");
+
+    const needsBooking = [
+      Screen.GuestList,
+      Screen.FaceCapture,
+      Screen.DocumentType,
+      Screen.DocumentCapture,
+      Screen.CheckinComplete,
+      Screen.PostCheckinDetails,
+      Screen.RoomAccessInformation,
+      Screen.ExtendStay,
+      Screen.Checkout,
+      Screen.CheckoutSuccess,
+    ].includes(screen);
+
+    if (needsBooking && !bookingId && !token) {
+      setScreen(Screen.EnterCode);
+    }
+  }, [screen, booking, guestListBookingId, checkinToken]);
 
   // --- DEV: preview mode ---
   useEffect(() => {
