@@ -432,11 +432,17 @@ const mapApiGuestsToUi = (raw: any): Guest[] => {
       (g.is_main_guest === true) ||
       (g.main_guest === true);
 
-    const firstName = g.details?.firstName ?? g.first_name ?? g.firstName ?? '';
-    const lastName = g.details?.lastName ?? g.last_name ?? g.lastName ?? '';
+    const firstNameRaw = g.details?.firstName ?? g.first_name ?? g.firstName ?? '';
+    const lastNameRaw = g.details?.lastName ?? g.last_name ?? g.lastName ?? '';
 
-    const fullName =
-      (g.full_name ?? g.fullName ?? g.name ?? `${firstName} ${lastName}`)?.toString().trim() || `Guest ${idx + 1}`;
+    const fullNameRaw =
+      (g.full_name ?? g.fullName ?? g.name ?? `${firstNameRaw} ${lastNameRaw}`)?.toString().trim();
+
+    const nameParts = (fullNameRaw ?? '').trim().split(/\s+/).filter(Boolean);
+    const firstName = firstNameRaw || nameParts[0] || '';
+    const lastName = lastNameRaw || nameParts.slice(1).join(' ') || '';
+
+    const fullName = fullNameRaw || `${firstName} ${lastName}`.trim() || `Guest ${idx + 1}`;
 
     const details = {
       ...(g.details || {}),
@@ -445,11 +451,11 @@ const mapApiGuestsToUi = (raw: any): Guest[] => {
       gender: g.details?.gender ?? g.gender ?? '',
       nationality: g.details?.nationality ?? g.nationality ?? '',
       dateOfBirth: g.details?.dateOfBirth ?? g.date_of_birth ?? g.dateOfBirth ?? '',
-      documentNumber: g.details?.documentNumber ?? g.id_number ?? g.documentNumber ?? '',
+      documentNumber: g.details?.documentNumber ?? g.id_number ?? g.idNumber ?? g.documentNumber ?? '',
       currentAddress: g.details?.currentAddress ?? g.current_address ?? g.currentAddress ?? '',
     };
 
-    const docTypeRaw = (g.documentType ?? g.id_type ?? '').toString().toUpperCase();
+    const docTypeRaw = (g.documentType ?? g.id_type ?? g.idType ?? '').toString().toUpperCase();
     const documentType =
       docTypeRaw.includes('PASSPORT') ? DocumentType.Passport :
         docTypeRaw.includes('ID') ? DocumentType.IDCard :
