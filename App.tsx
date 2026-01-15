@@ -429,54 +429,8 @@ const App: React.FC = () => {
 
       if (tokenFromUrl) {
         handleCodeSubmit(tokenFromUrl);
-      } else if (bookingIdFromUrl && /^\d+$/.test(bookingIdFromUrl)) {
-        const bid = Number(bookingIdFromUrl);
-        (async () => {
-          try {
-            setIsLoading(true);
-            setError(null);
-            setIsGuestListReadOnly(true);
-            setGuestListBookingId(bid);
-
-            const bookingResp: any = await apiService.getBookingDetailsById(bid);
-            const safeBooking: Booking = {
-              ...(bookingResp as any),
-              dbId: bid,
-              stay: (bookingResp as any)?.stay ?? {
-                from:
-                  (bookingResp as any)?.checkIn ??
-                  (bookingResp as any)?.check_in ??
-                  '',
-                to:
-                  (bookingResp as any)?.checkOut ??
-                  (bookingResp as any)?.check_out ??
-                  '',
-              },
-            };
-            setBooking(safeBooking);
-
-            try {
-              const resp: any = await apiService.fetchGuests(bid);
-              const rawGuests = Array.isArray(resp) ? resp : (resp?.data ?? []);
-              const uiGuests = rawGuests.map((g: any, idx: number) =>
-                mapBackendGuestToUi(g, idx)
-              );
-              const cached = loadGuestCache(bid);
-              const merged = mergeGuestsPreferCache(uiGuests, cached);
-              setGuests(normalizeGuestsForDisplay(merged));
-            } catch {
-              const cached = loadGuestCache(bid);
-              setGuests(normalizeGuestsForDisplay(cached));
-            }
-
-            navigateTo(Screen.PostCheckinDetails);
-          } catch (e) {
-            console.warn('[App] load by bookingId failed', e);
-            setError('ไม่พบข้อมูลการจอง');
-          } finally {
-            setIsLoading(false);
-          }
-        })();
+      } else {
+        navigateTo(Screen.EnterCode);
       }
 
       q.delete('token');
