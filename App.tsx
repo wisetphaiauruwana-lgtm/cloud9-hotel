@@ -1078,7 +1078,7 @@ const App: React.FC = () => {
           <button onClick={() => setError(null)} className="ml-4 font-bold">X</button>
         </div>
       )}
-      <div className="max-w-md md:max-w-2xl lg:max-w-4xl mx-auto bg-white min-h-screen">
+      <div className="w-full bg-white min-h-screen">
         {renderScreen()}
       </div>
     </div>
