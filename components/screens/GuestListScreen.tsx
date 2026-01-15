@@ -956,7 +956,19 @@ const handleConfirmDeleteSelected = async () => {
         <div className={guestListScreenStyles.header}>
           <h1 className={guestListScreenStyles.title}>{t('guestList.title') || 'Guest Details'}</h1>
 
-          {!isReadOnly && !isEditing && null}
+          {!isReadOnly && (
+            <div className={guestListScreenStyles.editButtonContainer}>
+              <button
+                onClick={() => {
+                  setIsEditing(!isEditing);
+                  if (isEditing) setSelectedGuestIds([]);
+                }}
+                className={guestListScreenStyles.editButton}
+              >
+                {isEditing ? (t('buttons.done') || 'Done') : (t('guestList.edit') || 'Edit')}
+              </button>
+            </div>
+          )}
         </div>
 
         {loading ? (
@@ -1011,6 +1023,7 @@ const handleConfirmDeleteSelected = async () => {
               <Button
                 onClick={() => setShowDeleteConfirm(true)}
                 disabled={selectedGuestIds.length === 0 || deletingSelected}
+                className={`w-full ${selectedGuestIds.length === 0 ? 'bg-gray-400 text-white' : 'bg-black text-white hover:bg-gray-800'}`}
               >
                 {deleteSelectedLabel}
               </Button>
@@ -1022,19 +1035,6 @@ const handleConfirmDeleteSelected = async () => {
                 disabled={!allVerified || loading || saving || !tokenUsed}
               >
                 {saving ? (t('guestList.saving') || 'Saving...') : (t('buttons.confirm') || 'CONFIRM')}
-              </Button>
-            )}
-
-            {isEditing && (
-              <Button
-                variant="secondary"
-                onClick={() => {
-                  setIsEditing(false);
-                  setSelectedGuestIds([]);
-                }}
-                disabled={deletingSelected}
-              >
-                {t('buttons.done') || 'Done'}
               </Button>
             )}
 
