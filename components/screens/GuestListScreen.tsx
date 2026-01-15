@@ -956,17 +956,7 @@ const handleConfirmDeleteSelected = async () => {
         <div className={guestListScreenStyles.header}>
           <h1 className={guestListScreenStyles.title}>{t('guestList.title') || 'Guest Details'}</h1>
 
-          {!isReadOnly && !isEditing && (
-            <div className={guestListScreenStyles.editButtonContainer}>
-              <button
-                onClick={() => setIsEditing(true)}
-                className={guestListScreenStyles.editButton}
-              >
-                <EditIcon className="inline-block mr-1 align-text-bottom" />
-                {t('guestList.edit') || 'Edit'}
-              </button>
-            </div>
-          )}
+          {!isReadOnly && !isEditing && null}
         </div>
 
         {loading ? (
