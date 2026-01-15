@@ -994,14 +994,13 @@ const App: React.FC = () => {
             token={checkinToken}
             onBack={() => navigateTo(Screen.Welcome)}
             onCheckout={() => navigateTo(Screen.Checkout)}
-            onViewGuests={(bookingIdArg, guestIdArg) => {
+            onViewGuests={(bookingIdArg) => {
               setIsGuestListReadOnly(true);
               if (bookingIdArg) setGuestListBookingId(Number(bookingIdArg));
 
               try {
                 const q = new URLSearchParams(window.location.search);
                 if (bookingIdArg) q.set("bookingId", String(bookingIdArg));
-                if (guestIdArg) q.set("guestId", String(guestIdArg));
                 const newSearch = q.toString();
                 const newUrl =
                   window.location.pathname +

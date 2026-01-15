@@ -86,7 +86,6 @@ interface GuestListItemProps {
   isEditing: boolean;
   isReadOnly: boolean;
   isSelected: boolean;
-  forceOpen?: boolean;
   onSelectToggle: () => void;
   onUpdateDetails: (details: Guest['details']) => void;
 }
@@ -98,11 +97,10 @@ const GuestListItem: React.FC<GuestListItemProps> = ({
   isEditing,
   isReadOnly,
   isSelected,
-  forceOpen = false,
   onSelectToggle,
   onUpdateDetails,
 }) => {
-  const [isOpen, setIsOpen] = useState(!!guest.isMainGuest || forceOpen);
+  const [isOpen, setIsOpen] = useState(!!guest.isMainGuest);
   const [details, setDetails] = useState(guest.details);
   const { t } = useTranslation();
 
@@ -138,13 +136,9 @@ const GuestListItem: React.FC<GuestListItemProps> = ({
   const handleToggle = () => { if (!isEditing) setIsOpen(!isOpen); };
 
   useEffect(() => {
-    if (forceOpen) {
-      setIsOpen(true);
-      return;
-    }
     if (isEditing) setIsOpen(false);
     else if (guest.isMainGuest) setIsOpen(true);
-  }, [isEditing, guest.isMainGuest, forceOpen]);
+  }, [isEditing, guest.isMainGuest]);
 
   return (
     <div className={guestListItemStyles.container}>
@@ -403,14 +397,6 @@ const getBookingIdFromQuery = () => {
   try {
     const qs = new URLSearchParams(window.location.search);
     return qs.get('bookingId');
-  } catch {
-    return null;
-  }
-};
-const getGuestIdFromQuery = () => {
-  try {
-    const qs = new URLSearchParams(window.location.search);
-    return qs.get('guestId');
   } catch {
     return null;
   }
@@ -927,18 +913,12 @@ const handleUpdateGuestDetails = (guestId: string, details: Guest["details"]) =>
 
 
   // ✅ FIX: ตัวนี้ใช้ render จริง (ViewGuests = isReadOnly)
-  const guestIdFromQuery = getGuestIdFromQuery();
-
   const displayGuests = useMemo(() => {
     const normalized = normalizeGuestsForDisplay(guests);
     if (!isReadOnly) return normalized;
     const meaningful = normalized.filter(isMeaningfulGuest);
-    if (guestIdFromQuery) {
-      const byId = meaningful.filter((g) => String(g.id) === String(guestIdFromQuery));
-      return byId.length > 0 ? byId : meaningful;
-    }
     return meaningful;
-  }, [guests, isReadOnly, guestIdFromQuery]);
+  }, [guests, isReadOnly]);
 
   // ✅ ลบผู้เข้าพักที่เลือก (ลบจาก state + cache + แจ้ง parent)
  // เมื่อมีการลบหรือแก้ไขข้อมูล
@@ -1024,7 +1004,6 @@ const handleConfirmDeleteSelected = async () => {
                 guest={guest}
                 isEditing={isEditing && !isReadOnly}
                 isSelected={selectedGuestIds.includes(guest.id)}
-                forceOpen={isReadOnly && !!guestIdFromQuery && String(guest.id) === String(guestIdFromQuery)}
                 onSelectToggle={() => {
                   // ✅ main guest ห้ามเลือก
                   if (guest.isMainGuest) return;
