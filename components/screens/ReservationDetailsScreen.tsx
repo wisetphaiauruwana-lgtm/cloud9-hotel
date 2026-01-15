@@ -7,6 +7,7 @@ import Button from '../ui/Button';
 import { useTranslation } from '../../hooks/useTranslation';
 import { apiService } from '../../services/apiService';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { CloudIcon, EditIcon } from '../icons/Icons';
 
 interface ReservationDetailsScreenProps {
   booking?: Booking | null;
@@ -24,11 +25,10 @@ interface ReservationDetailsScreenProps {
 
 /* --- styles & small helpers --- */
 const detailRowStyles = {
-  container:
-    'flex justify-between py-2 md:py-3 lg:py-4 border-b border-gray-100 last:border-0',
-  label: 'text-gray-500 text-sm md:text-base lg:text-lg',
-  value: 'font-medium text-right text-sm md:text-base lg:text-lg text-gray-900',
-  justifiedEnd: 'flex justify-end py-2 md:py-3 lg:py-4 border-b border-gray-100',
+  container: 'py-2 md:py-3 lg:py-4 border-b border-gray-100 last:border-0',
+  label: 'text-xs md:text-sm font-semibold tracking-wide text-gray-500',
+  value: 'mt-1 text-sm md:text-base text-gray-900',
+  justifiedEnd: 'py-2 md:py-3 lg:py-4 border-b border-gray-100',
 };
 
 const DetailRow: React.FC<{ label: string; value?: React.ReactNode }> = ({
@@ -43,19 +43,24 @@ const DetailRow: React.FC<{ label: string; value?: React.ReactNode }> = ({
 
 const styles = {
   container: 'flex flex-col min-h-screen bg-white',
-  main: 'flex-grow p-6 md:p-8 lg:p-10 space-y-6 md:space-y-8 lg:space-y-10',
-  title: 'text-xl md:text-2xl lg:text-3xl font-bold text-center text-gray-900',
-  detailsCard:
-    'bg-white p-4 md:p-6 lg:p-8 rounded-2xl shadow-sm border border-gray-200',
+  main: 'flex-grow px-6 pb-8 pt-4 md:px-8 lg:px-10 space-y-5',
+  title: 'text-xs md:text-sm font-bold tracking-[0.22em] text-gray-900 text-left',
+  detailsCard: 'bg-white p-0',
   divider: 'space-y-1',
+  brand: 'flex flex-col items-center gap-2 pt-2',
+  brandText: 'text-base font-bold tracking-widest text-gray-900',
+  statusPill:
+    'inline-flex items-center rounded-full bg-amber-100 text-amber-700 px-3 py-1 text-xs font-semibold',
   agreementContainer: 'flex items-start space-x-3',
   checkbox:
     'mt-1 h-4 w-4 md:h-5 md:w-5 lg:h-6 lg:w-6 bg-white border-gray-300 rounded text-black focus:ring-black',
   agreementLabel: 'text-sm md:text-base lg:text-lg text-gray-600',
   detailsLink: 'underline font-medium text-gray-900 hover:text-gray-700',
   footer:
-    'p-6 md:p-8 lg:p-10 sticky bottom-0 bg-white/95 backdrop-blur-sm border-t border-gray-100',
+    'px-6 pb-8 pt-4 md:px-8 lg:px-10 sticky bottom-0 bg-white/95 backdrop-blur-sm border-t border-gray-100',
   helpRow: 'flex items-center gap-3 justify-center mt-3',
+  inputLike:
+    'mt-1 flex items-center justify-between rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm',
 };
 
 /* safe getter that supports dotted paths */
@@ -492,6 +497,36 @@ const ReservationDetailsScreen: React.FC<ReservationDetailsScreenProps> = ({
   // rooms list
   const rooms = booking?.rooms ?? [];
   const roomsCount = Array.isArray(rooms) ? rooms.length : 0;
+  const roomType =
+    (roomsCount > 0
+      ? rooms[0]?.roomType ?? rooms[0]?.type ?? rooms[0]?.roomDetails?.typeName
+      : undefined) ??
+    safeGetString(
+      booking,
+      'roomType',
+      'raw.roomType',
+      'raw.room_type',
+      'raw.room?.type',
+      'raw.room?.name'
+    ) ??
+    '';
+  const roomChargeRaw = safeGetString(
+    booking,
+    'roomCharge',
+    'raw.roomCharge',
+    'raw.room_charge',
+    'raw.totalCharge',
+    'raw.totalAmount',
+    'raw.amount'
+  );
+  const roomChargeText = roomChargeRaw
+    ? /[a-zA-Z]/.test(String(roomChargeRaw))
+      ? String(roomChargeRaw)
+      : `THB ${roomChargeRaw}`
+    : '';
+  const statusText = isAlreadyCheckedIn(booking?.raw ?? booking)
+    ? t('postCheckin.status') || 'Checked In'
+    : t('reservationDetails.checkInPending') || 'Check-in Pending';
 
   // ✅ Confirm: ensure token is real token (if numeric => initiate)
  const handleConfirm = async () => {
@@ -552,7 +587,12 @@ const ReservationDetailsScreen: React.FC<ReservationDetailsScreenProps> = ({
     <div className={styles.container}>
       <Header onBack={onBack} />
       <main className={styles.main}>
+        <div className={styles.brand}>
+          <CloudIcon className="w-8 h-8 text-gray-900" />
+          <div className={styles.brandText}>cloud9</div>
+        </div>
         <h1 className={styles.title}>{t('reservationDetails.title') || 'Reservation Details'}</h1>
+        {booking && <div className={styles.statusPill}>{statusText}</div>}
 
         <div className={styles.detailsCard} role="region" aria-labelledby="reservation-details-heading">
           {loading ? (
@@ -589,32 +629,23 @@ const ReservationDetailsScreen: React.FC<ReservationDetailsScreenProps> = ({
             </div>
           ) : (
             <div className={styles.divider}>
-              <DetailRow
-  label={t('reservationDetails.mainGuest') || 'Main Guest'}
-  value={mainGuest ?? booking?.mainGuest ?? '-'}
-/>
-
-<DetailRow
-  label={t('reservationDetails.email') || 'Email'}
-  value={email ?? booking?.email ?? '-'}
-/>
-
-
-              <DetailRow
-                label={t('reservationDetails.stayDuration') || 'Stay Duration'}
-                value={`${t('reservationDetails.from') || 'From'} ${fromFormatted}`}
-              />
-              <div className={detailRowStyles.justifiedEnd}>
-                <span className={detailRowStyles.value}>
-                  {`${t('reservationDetails.to') || 'To'} ${toFormatted}`}
-                </span>
+              <div className={detailRowStyles.container}>
+                <div className={detailRowStyles.label}>
+                  {t('reservationDetails.mainGuest') || 'Main Guest'}
+                </div>
+                <div className={styles.inputLike}>
+                  <span>{mainGuest ?? booking?.mainGuest ?? '-'}</span>
+                  <EditIcon className="w-4 h-4 text-gray-500" />
+                </div>
               </div>
 
-             <DetailRow label={durationLabel || 'Nights/Hours'} value={durationValue || ''} />
-
-              {/* ✅ Guests summary (i18n) */}
               <DetailRow
-                label={t('reservationDetails.guests') || 'Guests'}
+                label={t('reservationDetails.email') || 'Email'}
+                value={email ?? booking?.email ?? '-'}
+              />
+
+              <DetailRow
+                label={t('reservationDetails.numGuests') || 'Number of Guests'}
                 value={
                   t('reservationDetails.numGuestsValue', {
                     adults: booking?.guests?.adults ?? 0,
@@ -623,6 +654,41 @@ const ReservationDetailsScreen: React.FC<ReservationDetailsScreenProps> = ({
                   `${booking?.guests?.adults ?? 0} Adult(s), ${booking?.guests?.children ?? 0} Child(ren)`
                 }
               />
+
+              <DetailRow
+                label={t('reservationDetails.stayDuration') || 'Stay Duration'}
+                value={
+                  <div className="space-y-1">
+                    <div>{`${t('reservationDetails.from') || 'From'} ${fromFormatted}`}</div>
+                    <div>{`${t('reservationDetails.to') || 'To'} ${toFormatted}`}</div>
+                  </div>
+                }
+              />
+
+              <DetailRow
+                label={durationLabel || 'Nights/Hours'}
+                value={
+                  durationValue
+                    ? durationLabel === (t('reservationDetails.nights') || 'Nights')
+                      ? `${durationValue} ${t('reservationDetails.nightsLabel') || 'Nights'}`
+                      : durationValue
+                    : ''
+                }
+              />
+
+              {roomType && (
+                <DetailRow
+                  label={t('reservationDetails.roomType') || 'Room Type'}
+                  value={roomType}
+                />
+              )}
+
+              {roomChargeText && (
+                <DetailRow
+                  label={t('reservationDetails.roomCharge') || 'Room Charge'}
+                  value={roomChargeText}
+                />
+              )}
 
               {/* ✅ Accompanying Guests */}
               {Array.isArray(booking?.accompanyingGuests) && booking.accompanyingGuests.length > 0 && (
@@ -652,17 +718,16 @@ const ReservationDetailsScreen: React.FC<ReservationDetailsScreenProps> = ({
                 </div>
               )}
 
-              {/* Rooms summary + list */}
-              <div className="mt-4">
-                <div className="text-sm text-gray-700 font-medium">
-                  {t('reservationDetails.rooms')
-                    ? `${t('reservationDetails.rooms')}: ${roomsCount}`
-                    : `Rooms: ${roomsCount}`}
-                </div>
+              {roomsCount > 1 && (
+                <div className="mt-4">
+                  <div className="text-sm text-gray-700 font-medium">
+                    {t('reservationDetails.rooms')
+                      ? `${t('reservationDetails.rooms')}: ${roomsCount}`
+                      : `Rooms: ${roomsCount}`}
+                  </div>
 
-                <ul className="mt-2 list-disc list-inside text-gray-800" aria-label="rooms-list">
-                  {roomsCount > 0 ? (
-                    rooms.map((r: any, idx: number) => {
+                  <ul className="mt-2 list-disc list-inside text-gray-800" aria-label="rooms-list">
+                    {rooms.map((r: any, idx: number) => {
                       const num = r.roomNumber ?? r.room_number ?? r.number ?? '';
                       const typ = r.roomType ?? r.type ?? r.roomDetails?.typeName ?? '';
                       return (
@@ -671,14 +736,10 @@ const ReservationDetailsScreen: React.FC<ReservationDetailsScreenProps> = ({
                           {typ ? ` (${typ})` : ''}
                         </li>
                       );
-                    })
-                  ) : (
-                    <li className="mt-1 text-sm text-gray-500">
-                      {t('reservationDetails.noRoomDetails') || 'No room details available.'}
-                    </li>
-                  )}
-                </ul>
-              </div>
+                    })}
+                  </ul>
+                </div>
+              )}
             </div>
           )}
         </div>
