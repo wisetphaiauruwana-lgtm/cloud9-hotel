@@ -172,7 +172,7 @@ interface PostCheckinDetailsScreenProps {
 
   onBack: () => void;
   onCheckout: () => void;
-  onViewGuests: (bookingId?: number | string) => void;
+  onViewGuests: (bookingId?: number | string, guestId?: number | string) => void;
   onViewRoomAccess: () => void;
   onExtendStay: () => void;
 }
@@ -304,6 +304,13 @@ const PostCheckinDetailsScreen: React.FC<PostCheckinDetailsScreenProps> = ({
     const last = mg?.details?.lastName ?? mg?.last_name ?? mg?.lastName ?? '';
     const name = (mg?.full_name ?? mg?.fullName ?? mg?.name ?? `${first} ${last}`)?.toString().trim();
     return name || '';
+  }, [guestList]);
+
+  const mainGuestIdFromGuests = useMemo(() => {
+    if (!guestList.length) return undefined;
+    const mg = guestList.find((g: any) => !!(g.isMainGuest ?? g.is_main_guest ?? g.mainGuest)) || guestList[0];
+    const id = mg?.guestId ?? mg?.guest_id ?? mg?.id;
+    return id ?? undefined;
   }, [guestList]);
 
 
@@ -449,7 +456,7 @@ const PostCheckinDetailsScreen: React.FC<PostCheckinDetailsScreenProps> = ({
           <div className="divide-y divide-gray-200 pt-2">
             <ActionLink
               label={t('postCheckin.viewGuests')}
-              onClick={() => onViewGuests(resolvedBookingId)}
+              onClick={() => onViewGuests(resolvedBookingId, mainGuestIdFromGuests)}
             />
             <ActionLink label={t('postCheckin.viewRoomAccess')} onClick={onViewRoomAccess} />
             {baseBooking?.stay?.hours && <ActionLink label={t('postCheckin.extendStay')} onClick={onExtendStay} />}
