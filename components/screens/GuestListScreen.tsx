@@ -494,6 +494,20 @@ const normalizeDate = (v?: string) => {
   return d.toISOString().split('T')[0];
 };
 
+const normalizeName = (v: any) => String(v ?? '').trim().toLowerCase();
+
+const getMainGuestNameFromBooking = (b: any) => {
+  const v =
+    b?.mainGuest ??
+    b?.mainGuestName ??
+    b?.guestName ??
+    b?.customerName ??
+    b?.customer?.full_name ??
+    b?.customer?.name ??
+    '';
+  return String(v ?? '').trim();
+};
+
 /* ✅ FIX: filter สำหรับ ViewGuests (isReadOnly) ให้โชว์เฉพาะที่ “กรอกจริง” */
 const isMeaningfulGuest = (g: Guest) => {
   if ((g.progress ?? 0) > 0) return true;  // ถ้า progress มากกว่า 0 ก็ถือว่ามีความหมาย
@@ -973,8 +987,22 @@ const handleUpdateGuestDetails = (guestId: string, details: Guest["details"]) =>
   const displayGuests = useMemo(() => {
     const normalized = normalizeGuestsForDisplay(guests);
     if (!isReadOnly) return normalized; // ถ้าไม่เป็น read-only ก็แสดงข้อมูลทั้งหมด
-    return normalized.filter(isMeaningfulGuest); // กรองข้อมูลที่มีการกรอกจริง
-  }, [guests, isReadOnly]);
+
+    const mainGuestName = getMainGuestNameFromBooking(bookingDetail);
+    const normalizedMain = normalizeName(mainGuestName);
+    let aligned = normalized;
+    if (normalizedMain) {
+      const hasMatch = normalized.some((g) => normalizeName(g.name) === normalizedMain);
+      if (hasMatch) {
+        aligned = normalized.map((g) => ({
+          ...g,
+          isMainGuest: normalizeName(g.name) === normalizedMain,
+        }));
+      }
+    }
+
+    return aligned.filter(isMeaningfulGuest); // กรองข้อมูลที่มีการกรอกจริง
+  }, [guests, isReadOnly, bookingDetail]);
 
   // ✅ ลบผู้เข้าพักที่เลือก (ลบจาก state + cache + แจ้ง parent)
  // เมื่อมีการลบหรือแก้ไขข้อมูล
