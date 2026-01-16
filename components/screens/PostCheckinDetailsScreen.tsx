@@ -213,6 +213,7 @@ const PostCheckinDetailsScreen: React.FC<PostCheckinDetailsScreenProps> = ({
   const [scanError, setScanError] = useState<string | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const scannerRef = useRef<QrScanner | null>(null);
+  const [scannedBookingId, setScannedBookingId] = useState<number | null>(null);
 
   // ✅ ค่าที่ "ชัวร์" หลังรีเฟรช/กดลิงก์
   const [liveBooking, setLiveBooking] = useState<any>(null);
@@ -227,6 +228,7 @@ const PostCheckinDetailsScreen: React.FC<PostCheckinDetailsScreenProps> = ({
     const storedBookingId = toNumberOrUndef(localStorage.getItem(CHECKIN_BOOKING_ID_KEY));
     return (
       queryBookingId ??
+      scannedBookingId ??
       storedBookingId ??
       toNumberOrUndef(bookingId) ??
       toNumberOrUndef(liveBooking?.dbId) ??
@@ -238,14 +240,19 @@ const PostCheckinDetailsScreen: React.FC<PostCheckinDetailsScreenProps> = ({
       toNumberOrUndef((booking as any)?.bookingId) ??
       toNumberOrUndef((booking as any)?.booking_id)
     );
-  }, [booking, bookingId, liveBooking]);
+  }, [booking, bookingId, liveBooking, scannedBookingId]);
 
   useEffect(() => {
     if (!resolvedBookingId) return;
     try {
       localStorage.setItem(CHECKIN_BOOKING_ID_KEY, String(resolvedBookingId));
+      const qs = new URLSearchParams(window.location.search);
+      qs.set('bookingId', String(resolvedBookingId));
+      const newSearch = qs.toString();
+      const newUrl = `${window.location.pathname}${newSearch ? `?${newSearch}` : ''}${window.location.hash}`;
+      window.history.replaceState({}, document.title, newUrl);
     } catch {
-      // ignore storage errors
+      // ignore
     }
   }, [resolvedBookingId]);
 
@@ -449,9 +456,8 @@ const PostCheckinDetailsScreen: React.FC<PostCheckinDetailsScreenProps> = ({
           setScanError(t('postCheckin.qrInvalid') || 'Invalid QR code');
           return;
         }
-        const origin = window.location.origin;
-        const path = window.location.pathname || '/';
-        window.location.href = `${origin}${path}?bookingId=${bid}`;
+        setScannedBookingId(bid);
+        setIsScanOpen(false);
       },
       {
         preferredCamera: 'environment',
