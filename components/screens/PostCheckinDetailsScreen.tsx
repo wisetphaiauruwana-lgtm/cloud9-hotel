@@ -1,16 +1,12 @@
 // src/components/screens/PostCheckinDetailsScreen.tsx
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { apiService } from '../../services/apiService';
 import { Booking } from '../../types';
 import Header from '../layout/Header';
 import Footer from '../layout/Footer';
-import Button from '../ui/Button';
 import { ChevronRightIcon, LocationIcon, PhoneIcon } from '../icons/Icons';
 import { useTranslation } from '../../hooks/useTranslation';
 import { QRCodeCanvas } from 'qrcode.react';
-import QrScanner from 'qr-scanner';
-
-QrScanner.WORKER_PATH = new URL('qr-scanner/qr-scanner-worker.min.js', import.meta.url).toString();
 
 /* --------------------
    Local Components
@@ -90,20 +86,6 @@ const pickMainGuestFromBooking = (b: any): string => {
     b?.customer?.name ??
     '';
   return String(v ?? '').trim();
-};
-
-const getBookingIdFromQr = (data: string): number | undefined => {
-  if (!data) return undefined;
-  try {
-    const url = new URL(data);
-    const raw = url.searchParams.get('bookingId') ?? url.searchParams.get('booking_id');
-    const n = Number(raw);
-    if (!Number.isNaN(n) && n > 0) return n;
-  } catch {
-    const n = Number(String(data).trim());
-    if (!Number.isNaN(n) && n > 0) return n;
-  }
-  return undefined;
 };
 
 /* ----------------- Local guest cache + merge (prefer cache) ----------------- */
@@ -209,10 +191,6 @@ const PostCheckinDetailsScreen: React.FC<PostCheckinDetailsScreenProps> = ({
 
   const [guestList, setGuestList] = useState<any[]>([]);
   const [guestLoading, setGuestLoading] = useState(false);
-  const [isScanOpen, setIsScanOpen] = useState(false);
-  const [scanError, setScanError] = useState<string | null>(null);
-  const videoRef = useRef<HTMLVideoElement | null>(null);
-  const scannerRef = useRef<QrScanner | null>(null);
   const [scannedBookingId, setScannedBookingId] = useState<number | null>(null);
 
   // ✅ ค่าที่ "ชัวร์" หลังรีเฟรช/กดลิงก์
@@ -228,7 +206,6 @@ const PostCheckinDetailsScreen: React.FC<PostCheckinDetailsScreenProps> = ({
     const storedBookingId = toNumberOrUndef(localStorage.getItem(CHECKIN_BOOKING_ID_KEY));
     return (
       queryBookingId ??
-      scannedBookingId ??
       storedBookingId ??
       toNumberOrUndef(bookingId) ??
       toNumberOrUndef(liveBooking?.dbId) ??
@@ -436,51 +413,6 @@ const PostCheckinDetailsScreen: React.FC<PostCheckinDetailsScreenProps> = ({
     );
   }, [resolvedBookingId, baseBooking]);
 
-  useEffect(() => {
-    if (!isScanOpen) {
-      if (scannerRef.current) {
-        scannerRef.current.stop();
-        scannerRef.current.destroy();
-        scannerRef.current = null;
-      }
-      return;
-    }
-
-    const video = videoRef.current;
-    if (!video) return;
-
-    setScanError(null);
-    scannerRef.current = new QrScanner(
-      video,
-      (result) => {
-        const raw = typeof result === 'string' ? result : result?.data;
-        const bid = getBookingIdFromQr(String(raw ?? ''));
-        if (!bid) {
-          setScanError(t('postCheckin.qrInvalid') || 'Invalid QR code');
-          return;
-        }
-        setScannedBookingId(bid);
-        setIsScanOpen(false);
-      },
-      {
-        preferredCamera: 'environment',
-        highlightScanRegion: true,
-        highlightCodeOutline: true,
-      }
-    );
-
-    scannerRef.current.start().catch(() => {
-      setScanError(t('postCheckin.qrNoCamera') || 'Camera not available');
-    });
-
-    return () => {
-      if (scannerRef.current) {
-        scannerRef.current.stop();
-        scannerRef.current.destroy();
-        scannerRef.current = null;
-      }
-    };
-  }, [isScanOpen, t]);
 
   const isMissingBooking = !booking && !liveBooking;
 
@@ -488,9 +420,7 @@ const PostCheckinDetailsScreen: React.FC<PostCheckinDetailsScreenProps> = ({
     return (
       <div className="flex flex-col items-center justify-center min-h-screen gap-4">
         <p className="text-gray-600">Booking not found</p>
-        <Button variant="secondary" onClick={onBack}>
-          Back
-        </Button>
+    
       </div>
     );
   }
@@ -518,15 +448,9 @@ const PostCheckinDetailsScreen: React.FC<PostCheckinDetailsScreenProps> = ({
 
           {qrUrl && (
             <div className="rounded-2xl border border-gray-200 bg-slate-50 p-4 text-center space-y-3">
-              <p className="text-xs md:text-sm font-semibold text-gray-600">
-                {t('postCheckin.qrTitle') || 'Reservation Details QR Code'}
-              </p>
               <div className="flex justify-center">
                 <QRCodeCanvas value={qrUrl} size={160} bgColor="#ffffff" fgColor="#000000" />
               </div>
-              <Button variant="secondary" onClick={() => setIsScanOpen(true)}>
-                Scan QR Code
-              </Button>
             </div>
           )}
 
@@ -648,42 +572,12 @@ const PostCheckinDetailsScreen: React.FC<PostCheckinDetailsScreenProps> = ({
 
       <div className="px-4 pb-6">
       <div className="mx-auto w-full max-w-[360px] md:max-w-[600px] lg:max-w-[720px]">
-          <Button
-            variant="outline"
-            onClick={onCheckout}
-            className="w-full border-red-500 text-red-500 hover:bg-red-50"
-          >
-            {t('buttons.checkout')}
-          </Button>
+
         </div>
       </div>
 
       <Footer />
 
-      {isScanOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-6">
-          <div className="w-full max-w-[420px] rounded-2xl bg-white p-4 space-y-4">
-            <div className="flex items-center justify-between">
-              <p className="text-sm font-semibold text-gray-800">Scan QR Code</p>
-              <button
-                type="button"
-                onClick={() => setIsScanOpen(false)}
-                className="text-gray-500 hover:text-gray-900"
-                aria-label="Close"
-              >
-                ✕
-              </button>
-            </div>
-            <div className="w-full aspect-square rounded-xl overflow-hidden bg-black">
-              <video ref={videoRef} className="w-full h-full object-cover" />
-            </div>
-            {scanError && <p className="text-xs text-red-500">{scanError}</p>}
-            <Button variant="secondary" onClick={() => setIsScanOpen(false)}>
-              {t('buttons.cancel') || 'Cancel'}
-            </Button>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
