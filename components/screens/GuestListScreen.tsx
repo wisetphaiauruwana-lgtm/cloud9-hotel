@@ -114,6 +114,9 @@ const GuestListItem: React.FC<GuestListItemProps> = ({
     const s = String(val).trim();
     if (!s) return undefined;
     if (s.startsWith('data:')) return s;
+    if (s.startsWith('/9j/')) return `data:image/jpeg;base64,${s.slice(1)}`;
+    if (s.startsWith('iVBOR')) return `data:image/png;base64,${s}`;
+    if (s.startsWith('R0lGOD')) return `data:image/gif;base64,${s}`;
     if (s.startsWith('http://') || s.startsWith('https://')) return s;
     if (s.startsWith('/')) return `${API_BASE_URL}${s}`;
     if (s.startsWith('uploads/')) return `${API_BASE_URL}/${s}`;
