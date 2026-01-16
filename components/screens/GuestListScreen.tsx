@@ -8,6 +8,7 @@ import { ChevronDownIcon, ChevronUpIcon, CloudIcon, EditIcon } from '../icons/Ic
 import { useTranslation } from '../../hooks/useTranslation';
 import { useLocation } from 'react-router-dom';
 import { apiService } from '../../services/apiService';
+import { API_BASE_URL } from '../../services/api.constants';
 import {
   loadGuestCache,
   saveGuestCache,
@@ -114,8 +115,9 @@ const GuestListItem: React.FC<GuestListItemProps> = ({
     if (!s) return undefined;
     if (s.startsWith('data:')) return s;
     if (s.startsWith('http://') || s.startsWith('https://')) return s;
-    if (s.startsWith('/')) return s;
-    if (s.startsWith('uploads/')) return `/${s}`;
+    if (s.startsWith('/')) return `${API_BASE_URL}${s}`;
+    if (s.startsWith('uploads/')) return `${API_BASE_URL}/${s}`;
+    if (s.startsWith('storage/')) return `${API_BASE_URL}/${s}`;
     return `data:image/jpeg;base64,${s}`;
   };
 
