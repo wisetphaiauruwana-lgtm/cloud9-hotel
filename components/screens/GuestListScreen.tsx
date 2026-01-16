@@ -122,6 +122,96 @@ const GuestListItem: React.FC<GuestListItemProps> = ({
 
   useEffect(() => { setDetails(guest.details); }, [guest.details]);
 
+  const renderDetailsFields = () => (
+    <>
+      {(!isReadOnly || isFilled(details?.firstName)) && (
+        <EditableField
+          label={t('guestList.firstName')}
+          placeholder={t('guestList.firstName')}
+          value={details?.firstName ?? ''}
+          onChange={(v) => handleDetailChange('firstName', v)}
+          readOnly={isReadOnly}
+        />
+      )}
+
+      {(!isReadOnly || isFilled(details?.lastName)) && (
+        <EditableField
+          label={t('guestList.lastName')}
+          placeholder={t('guestList.lastName')}
+          value={details?.lastName ?? ''}
+          onChange={(v) => handleDetailChange('lastName', v)}
+          readOnly={isReadOnly}
+        />
+      )}
+
+      {(!isReadOnly || !!guest.documentType) && (
+        <EditableField
+          label="Document Type"
+          placeholder="Document Type"
+          value={
+            guest.documentType === DocumentType.Passport
+              ? 'Passport'
+              : guest.documentType === DocumentType.IDCard
+                ? 'Thai ID Card'
+                : ''
+          }
+          onChange={() => { }}
+          readOnly={true}
+        />
+      )}
+
+      {(!isReadOnly || isFilled(details?.documentNumber)) && (
+        <EditableField
+          label={guest.documentType === DocumentType.Passport ? t('guestList.passportNumber') : t('guestList.idNumber')}
+          placeholder={guest.documentType === DocumentType.Passport ? t('guestList.passportNumber') : t('guestList.idNumber')}
+          value={details?.documentNumber ?? ''}
+          onChange={(v) => handleDetailChange('documentNumber', v)}
+          readOnly={isReadOnly}
+        />
+      )}
+
+      {(!isReadOnly || isFilled(details?.nationality)) && (
+        <EditableField
+          label={t('guestList.nationality')}
+          placeholder={t('guestList.nationality')}
+          value={details?.nationality ?? ''}
+          onChange={(v) => handleDetailChange('nationality', v)}
+          readOnly={isReadOnly}
+        />
+      )}
+
+      {(!isReadOnly || isFilled(details?.gender)) && (
+        <EditableField
+          label={t('guestList.gender')}
+          placeholder={t('guestList.gender')}
+          value={details?.gender ?? ''}
+          onChange={(v) => handleDetailChange('gender', v)}
+          readOnly={isReadOnly}
+        />
+      )}
+
+      {(!isReadOnly || isFilled(displayDOB)) && (
+        <EditableField
+          label={t('guestList.dateOfBirth')}
+          placeholder={t('guestList.dateOfBirth')}
+          value={displayDOB}
+          onChange={(v) => handleDetailChange('dateOfBirth', v)}
+          readOnly={isReadOnly}
+        />
+      )}
+
+      {guest.documentType === DocumentType.IDCard && (!isReadOnly || isFilled(details?.currentAddress)) && (
+        <EditableField
+          label={t('guestList.currentAddress')}
+          placeholder={t('guestList.currentAddress')}
+          value={details?.currentAddress ?? ''}
+          onChange={(v) => handleDetailChange('currentAddress', v)}
+          readOnly={isReadOnly}
+        />
+      )}
+    </>
+  );
+
   const handleDetailChange = (field: keyof NonNullable<Guest['details']>, value: string) => {
     if (isReadOnly) return; // ถ้าฟอร์มเป็นแบบ Read-Only ไม่สามารถแก้ไขได้
     const newDetails = {
@@ -172,7 +262,29 @@ const GuestListItem: React.FC<GuestListItemProps> = ({
 
       {isOpen && !isEditing && (
         <div className={guestListItemStyles.content}>
-          {!guest.faceImage ? (
+          {isReadOnly ? (
+            <div className={guestListItemStyles.verifiedContainer}>
+              {(faceSrc || documentSrc) && (
+                <div className={guestListItemStyles.imageGrid}>
+                  {faceSrc && (
+                    <div>
+                      <p className={guestListItemStyles.imageLabel}>{t('guestList.verifiedImage')}</p>
+                      <img src={faceSrc} alt="Verified face" className={guestListItemStyles.verifiedImage} />
+                    </div>
+                  )}
+                  {documentSrc && (
+                    <div>
+                      <p className={guestListItemStyles.imageLabel}>{t('guestList.verifiedDocument')}</p>
+                      <img src={documentSrc} alt="Verified document" className={guestListItemStyles.verifiedDocument} />
+                    </div>
+                  )}
+                </div>
+              )}
+              <div className={guestListItemStyles.detailsContainer}>
+                {renderDetailsFields()}
+              </div>
+            </div>
+          ) : !guest.faceImage ? (
             <div className={guestListItemStyles.actionsContainer}>
               <div className={guestListItemStyles.actionRow}>
                 <span className={guestListItemStyles.actionLabel}>{t('guestList.takePhoto')}</span>
@@ -248,91 +360,7 @@ const GuestListItem: React.FC<GuestListItemProps> = ({
               </div>
 
               <div className={guestListItemStyles.detailsContainer}>
-                {(!isReadOnly || isFilled(details?.firstName)) && (
-                  <EditableField
-                    label={t('guestList.firstName')}
-                    placeholder={t('guestList.firstName')}
-                    value={details?.firstName ?? ''}  // ใช้ข้อมูลที่อัพเดตใน state
-                    onChange={(v) => handleDetailChange('firstName', v)}  // อัพเดตข้อมูล
-                    readOnly={isReadOnly}
-                  />
-                )}
-
-                {(!isReadOnly || isFilled(details?.lastName)) && (
-                  <EditableField
-                    label={t('guestList.lastName')}
-                    placeholder={t('guestList.lastName')}
-                    value={details?.lastName ?? ''}
-                    onChange={(v) => handleDetailChange('lastName', v)}
-                    readOnly={isReadOnly}
-                  />
-                )}
-
-                {(!isReadOnly || !!guest.documentType) && (
-                  <EditableField
-                    label="Document Type"
-                    placeholder="Document Type"
-                    value={
-                      guest.documentType === DocumentType.Passport
-                        ? 'Passport'
-                        : guest.documentType === DocumentType.IDCard
-                          ? 'Thai ID Card'
-                          : ''
-                    }
-                    onChange={() => { }}
-                    readOnly={true}
-                  />
-                )}
-
-                {(!isReadOnly || isFilled(details?.documentNumber)) && (
-                  <EditableField
-                    label={guest.documentType === DocumentType.Passport ? t('guestList.passportNumber') : t('guestList.idNumber')}
-                    placeholder={guest.documentType === DocumentType.Passport ? t('guestList.passportNumber') : t('guestList.idNumber')}
-                    value={details?.documentNumber ?? ''}
-                    onChange={(v) => handleDetailChange('documentNumber', v)}
-                    readOnly={isReadOnly}
-                  />
-                )}
-
-                {(!isReadOnly || isFilled(details?.nationality)) && (
-                  <EditableField
-                    label={t('guestList.nationality')}
-                    placeholder={t('guestList.nationality')}
-                    value={details?.nationality ?? ''}
-                    onChange={(v) => handleDetailChange('nationality', v)}
-                    readOnly={isReadOnly}
-                  />
-                )}
-
-                {(!isReadOnly || isFilled(details?.gender)) && (
-                  <EditableField
-                    label={t('guestList.gender')}
-                    placeholder={t('guestList.gender')}
-                    value={details?.gender ?? ''}
-                    onChange={(v) => handleDetailChange('gender', v)}
-                    readOnly={isReadOnly}
-                  />
-                )}
-
-                {(!isReadOnly || isFilled(displayDOB)) && (
-                  <EditableField
-                    label={t('guestList.dateOfBirth')}
-                    placeholder={t('guestList.dateOfBirth')}
-                    value={displayDOB}
-                    onChange={(v) => handleDetailChange('dateOfBirth', v)}
-                    readOnly={isReadOnly}
-                  />
-                )}
-
-                {guest.documentType === DocumentType.IDCard && (!isReadOnly || isFilled(details?.currentAddress)) && (
-                  <EditableField
-                    label={t('guestList.currentAddress')}
-                    placeholder={t('guestList.currentAddress')}
-                    value={details?.currentAddress ?? ''}
-                    onChange={(v) => handleDetailChange('currentAddress', v)}
-                    readOnly={isReadOnly}
-                  />
-                )}
+                {renderDetailsFields()}
               </div>
             </div>
           )}
