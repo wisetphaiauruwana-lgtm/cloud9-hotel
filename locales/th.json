@@ -162,6 +162,7 @@
   "postCheckin": {
     "title": "รายละเอียดการจอง",
     "status": "เช็คอินแล้ว",
+    "qrTitle": "QR Code รายละเอียดการจอง",
     "qrCodeLabel": "QR Code รายละเอียดการจอง",
     "mainGuest": "ผู้เข้าพักหลัก:",
     "email": "อีเมล:",

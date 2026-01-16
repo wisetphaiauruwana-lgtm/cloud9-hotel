@@ -167,6 +167,7 @@
   "postCheckin": {
     "title": "RESERVATION DETAILS",
     "status": "Checked In",
+    "qrTitle": "Reservation Details QR Code",
     "qrCodeLabel": "Reservation Details QR Code",
     "mainGuest": "Main Guest:",
     "email": "Email:",

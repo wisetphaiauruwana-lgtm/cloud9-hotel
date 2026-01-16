@@ -264,6 +264,29 @@ const PostCheckinDetailsScreen: React.FC<PostCheckinDetailsScreenProps> = ({
   }, [token]);
 
   // --------------------
+  // 1.5) โหลด booking สดจาก bookingId (กรณีสแกน QR / ไม่มี token)
+  // --------------------
+  useEffect(() => {
+    let mounted = true;
+    const run = async () => {
+      if (!resolvedBookingId) return;
+      if (liveBooking) return;
+      try {
+        const bkResp: any = await apiService.getBookingDetailsById(resolvedBookingId);
+        const bk: any = unwrapBooking(bkResp);
+        if (!mounted) return;
+        setLiveBooking(bk);
+      } catch {
+        // ignore
+      }
+    };
+    run();
+    return () => {
+      mounted = false;
+    };
+  }, [resolvedBookingId, liveBooking]);
+
+  // --------------------
   // 2) โหลด guests แล้ว merge กับ cache (ให้ cache ชนะ)
   // ✅ FIX: apiService.fetchGuests(bid) คืน Guest[] แล้ว (ไม่ใช่ resp object)
   // --------------------
@@ -467,7 +490,7 @@ const PostCheckinDetailsScreen: React.FC<PostCheckinDetailsScreenProps> = ({
                 <QRCodeCanvas value={qrUrl} size={160} bgColor="#ffffff" fgColor="#000000" />
               </div>
               <Button variant="secondary" onClick={() => setIsScanOpen(true)}>
-                {t('postCheckin.scanQr') || 'Scan QR Code'}
+                Scan QR Code
               </Button>
             </div>
           )}
@@ -567,9 +590,7 @@ const PostCheckinDetailsScreen: React.FC<PostCheckinDetailsScreenProps> = ({
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-6">
           <div className="w-full max-w-[420px] rounded-2xl bg-white p-4 space-y-4">
             <div className="flex items-center justify-between">
-              <p className="text-sm font-semibold text-gray-800">
-                {t('postCheckin.scanQr') || 'Scan QR Code'}
-              </p>
+              <p className="text-sm font-semibold text-gray-800">Scan QR Code</p>
               <button
                 type="button"
                 onClick={() => setIsScanOpen(false)}
