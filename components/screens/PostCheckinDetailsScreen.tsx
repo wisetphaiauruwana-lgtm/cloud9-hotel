@@ -379,19 +379,6 @@ const PostCheckinDetailsScreen: React.FC<PostCheckinDetailsScreenProps> = ({
     baseBooking?.from ||
     '';
 
-  const isMissingBooking = !booking && !liveBooking;
-
-  if (isMissingBooking) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-screen gap-4">
-        <p className="text-gray-600">Booking not found</p>
-        <Button variant="secondary" onClick={onBack}>
-          Back
-        </Button>
-      </div>
-    );
-  }
-
   const stayTo =
     baseBooking?.stay?.to ||
     baseBooking?.checkOutDate ||
@@ -485,6 +472,19 @@ const PostCheckinDetailsScreen: React.FC<PostCheckinDetailsScreenProps> = ({
       }
     };
   }, [isScanOpen, t]);
+
+  const isMissingBooking = !booking && !liveBooking;
+
+  if (isMissingBooking) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen gap-4">
+        <p className="text-gray-600">Booking not found</p>
+        <Button variant="secondary" onClick={onBack}>
+          Back
+        </Button>
+      </div>
+    );
+  }
 
   // --------------------
   // Render
