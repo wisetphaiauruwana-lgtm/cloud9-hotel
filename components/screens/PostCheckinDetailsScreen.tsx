@@ -206,12 +206,12 @@ const PostCheckinDetailsScreen: React.FC<PostCheckinDetailsScreenProps> = ({
     const storedBookingId = toNumberOrUndef(localStorage.getItem(CHECKIN_BOOKING_ID_KEY));
     return (
       queryBookingId ??
-      storedBookingId ??
       toNumberOrUndef(bookingId) ??
       toNumberOrUndef(liveBooking?.dbId) ??
       toNumberOrUndef(liveBooking?.id) ??
       toNumberOrUndef(liveBooking?.bookingId) ??
       toNumberOrUndef(liveBooking?.booking_id) ??
+      storedBookingId ??
       toNumberOrUndef((booking as any)?.dbId) ??
       toNumberOrUndef((booking as any)?.id) ??
       toNumberOrUndef((booking as any)?.bookingId) ??
