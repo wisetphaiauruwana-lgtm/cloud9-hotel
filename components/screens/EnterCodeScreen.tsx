@@ -9,6 +9,8 @@ import { apiService } from '../../services/apiService'; // <-- ใช้ apiServ
 import { useNavigate } from 'react-router-dom';
 import { CloudIcon } from '../icons/Icons';
 
+const CHECKIN_BOOKING_ID_KEY = "checkin_booking_id";
+
 interface EnterCodeScreenProps {
   onSubmit: (token: string) => void;
   onBack: () => void;
@@ -43,6 +45,22 @@ const formatDisplayCode = (raw: string) => {
   return raw;
 };
 
+const extractBookingIdFromVerify = (resp: any): number | undefined => {
+  const v =
+    resp?.bookingId ??
+    resp?.booking_id ??
+    resp?.booking?.id ??
+    resp?.booking?.bookingId ??
+    resp?.booking?.booking_id ??
+    resp?.data?.bookingId ??
+    resp?.data?.booking_id ??
+    resp?.data?.booking?.id ??
+    resp?.data?.booking?.bookingId ??
+    resp?.data?.booking?.booking_id;
+  if (v === undefined || v === null) return undefined;
+  const n = Number(v);
+  return Number.isNaN(n) ? undefined : n;
+};
 
 const EnterCodeScreen: React.FC<EnterCodeScreenProps> = ({ onSubmit, onBack, error: externalError = null }) => {
   const [code, setCode] = useState("");
@@ -85,17 +103,24 @@ const EnterCodeScreen: React.FC<EnterCodeScreenProps> = ({ onSubmit, onBack, err
         resp?.data ||
         null;
 
-      if (booking && (booking.checkedInAt || booking.status === "Checked-In")) {
-        localStorage.setItem("checkedin_booking", JSON.stringify(booking));
-        onSubmit("ALREADY_CHECKEDIN");
-        return;
-      }
-
-
       const token =
         resp?.token ||
         resp?.data?.token ||
         (typeof resp === 'string' ? resp : null);
+
+      const bookingId = extractBookingIdFromVerify(resp);
+      if (bookingId) {
+        try { localStorage.setItem(CHECKIN_BOOKING_ID_KEY, String(bookingId)); } catch { }
+      }
+
+      if (booking && (booking.checkedInAt || booking.status === "Checked-In")) {
+        localStorage.setItem("checkedin_booking", JSON.stringify(booking));
+        if (token) {
+          localStorage.setItem('checkin_token', String(token));
+        }
+        onSubmit("ALREADY_CHECKEDIN");
+        return;
+      }
 
       console.log('[EnterCode] extracted token =', token);
 

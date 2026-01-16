@@ -288,6 +288,8 @@ const App: React.FC = () => {
         // ✅ สำคัญ: โหลด guests จริง เพื่อให้ email/mainGuest แสดงได้
         const bid = extractBookingId(safeBooking);
         if (bid) {
+          setGuestListBookingId(bid);
+          try { localStorage.setItem(CHECKIN_BOOKING_ID_KEY, String(bid)); } catch { }
           try {
             const resp: any = await apiService.fetchGuests(bid);
             const list = resp?.data ?? resp?.guests ?? resp ?? [];
@@ -325,6 +327,12 @@ const App: React.FC = () => {
         bkResp;
 
       console.log("🔥 Booking from API =", bk);
+
+      const bookingIdFromToken = extractBookingId(bk);
+      if (bookingIdFromToken) {
+        setGuestListBookingId(bookingIdFromToken);
+        try { localStorage.setItem(CHECKIN_BOOKING_ID_KEY, String(bookingIdFromToken)); } catch { }
+      }
 
       if (isCheckedOutBooking(bk)) {
         setError(t('enterCode.checkedOut') ?? 'เช็กเอ้าแล้ว');
@@ -380,6 +388,8 @@ const App: React.FC = () => {
         // ✅ สำคัญ: ห้าม setGuests([]) ทิ้ง ต้องโหลด guests
         const bid = extractBookingId(safeBooking);
         if (bid) {
+          setGuestListBookingId(bid);
+          try { localStorage.setItem(CHECKIN_BOOKING_ID_KEY, String(bid)); } catch { }
           try {
             const resp: any = await apiService.fetchGuests(bid);
             const list = resp?.data ?? resp?.guests ?? resp ?? [];
