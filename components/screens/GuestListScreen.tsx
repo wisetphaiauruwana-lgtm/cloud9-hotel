@@ -108,17 +108,19 @@ const GuestListItem: React.FC<GuestListItemProps> = ({
   const displayDOB = details?.dateOfBirth ? String(details.dateOfBirth).split('T')[0] : '';
   const isFilled = (v: any) => String(v ?? '').trim() !== '';
 
-  const faceSrc = guest.faceImage
-    ? String(guest.faceImage).startsWith('data:')
-      ? String(guest.faceImage)
-      : `data:image/jpeg;base64,${guest.faceImage}`
-    : undefined;
+  const toImageSrc = (val?: any) => {
+    if (!val) return undefined;
+    const s = String(val).trim();
+    if (!s) return undefined;
+    if (s.startsWith('data:')) return s;
+    if (s.startsWith('http://') || s.startsWith('https://')) return s;
+    if (s.startsWith('/')) return s;
+    if (s.startsWith('uploads/')) return `/${s}`;
+    return `data:image/jpeg;base64,${s}`;
+  };
 
-  const documentSrc = guest.documentImage
-    ? String(guest.documentImage).startsWith('data:')
-      ? String(guest.documentImage)
-      : `data:image/jpeg;base64,${guest.documentImage}`
-    : undefined;
+  const faceSrc = toImageSrc(guest.faceImage);
+  const documentSrc = toImageSrc(guest.documentImage);
 
   useEffect(() => { setDetails(guest.details); }, [guest.details]);
 
@@ -442,6 +444,14 @@ const getTokenFromQuery = () => {
   }
 };
 
+const pickImageValue = (g: any, keys: string[]) => {
+  for (const k of keys) {
+    const v = g?.[k];
+    if (v) return v;
+  }
+  return '';
+};
+
 // ✅ map response from backend -> Guest[]
 const mapApiGuestsToUi = (raw: any): Guest[] => {
   const list = raw?.data ?? raw?.guests ?? raw ?? [];
@@ -481,8 +491,26 @@ const mapApiGuestsToUi = (raw: any): Guest[] => {
         docTypeRaw.includes('ID') ? DocumentType.IDCard :
           (g.documentType ?? DocumentType.IDCard);
 
-    const faceImage = g.faceImage ?? g.face_image ?? g.face_image_base64 ?? '';
-    const documentImage = g.documentImage ?? g.document_image ?? g.document_image_base64 ?? '';
+    const faceImage = pickImageValue(g, [
+      'faceImage',
+      'face_image',
+      'face_image_base64',
+      'faceImageBase64',
+      'face_image_url',
+      'faceImageUrl',
+      'face_image_path',
+      'faceImagePath',
+    ]);
+    const documentImage = pickImageValue(g, [
+      'documentImage',
+      'document_image',
+      'document_image_base64',
+      'documentImageBase64',
+      'document_image_url',
+      'documentImageUrl',
+      'document_image_path',
+      'documentImagePath',
+    ]);
 
     const progress =
       typeof g.progress === 'number'
