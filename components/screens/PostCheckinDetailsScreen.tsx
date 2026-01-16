@@ -240,6 +240,15 @@ const PostCheckinDetailsScreen: React.FC<PostCheckinDetailsScreenProps> = ({
     );
   }, [booking, bookingId, liveBooking]);
 
+  useEffect(() => {
+    if (!resolvedBookingId) return;
+    try {
+      localStorage.setItem(CHECKIN_BOOKING_ID_KEY, String(resolvedBookingId));
+    } catch {
+      // ignore storage errors
+    }
+  }, [resolvedBookingId]);
+
 
   // --------------------
   // 1) โหลด booking สดจาก token เพื่อเอา email/mainGuest ที่ "ไม่หาย"
@@ -420,6 +429,16 @@ const PostCheckinDetailsScreen: React.FC<PostCheckinDetailsScreenProps> = ({
     return `${origin}${path}?bookingId=${bid}`;
   }, [resolvedBookingId]);
 
+  const actionBookingId = useMemo(() => {
+    return (
+      resolvedBookingId ??
+      toNumberOrUndef(baseBooking?.dbId) ??
+      toNumberOrUndef(baseBooking?.id) ??
+      toNumberOrUndef(baseBooking?.bookingId) ??
+      toNumberOrUndef(baseBooking?.booking_id)
+    );
+  }, [resolvedBookingId, baseBooking]);
+
   useEffect(() => {
     if (!isScanOpen) {
       if (scannerRef.current) {
@@ -588,9 +607,30 @@ const PostCheckinDetailsScreen: React.FC<PostCheckinDetailsScreenProps> = ({
           <div className="divide-y divide-gray-200 pt-2">
             <ActionLink
               label={t('postCheckin.viewGuests')}
-              onClick={() => onViewGuests(resolvedBookingId)}
+              onClick={() => {
+                if (actionBookingId) {
+                  try {
+                    localStorage.setItem(CHECKIN_BOOKING_ID_KEY, String(actionBookingId));
+                  } catch {
+                    // ignore storage errors
+                  }
+                }
+                onViewGuests(actionBookingId);
+              }}
             />
-            <ActionLink label={t('postCheckin.viewRoomAccess')} onClick={onViewRoomAccess} />
+            <ActionLink
+              label={t('postCheckin.viewRoomAccess')}
+              onClick={() => {
+                if (actionBookingId) {
+                  try {
+                    localStorage.setItem(CHECKIN_BOOKING_ID_KEY, String(actionBookingId));
+                  } catch {
+                    // ignore storage errors
+                  }
+                }
+                onViewRoomAccess();
+              }}
+            />
             {baseBooking?.stay?.hours && <ActionLink label={t('postCheckin.extendStay')} onClick={onExtendStay} />}
           </div>
         </div>

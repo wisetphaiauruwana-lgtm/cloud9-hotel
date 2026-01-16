@@ -8,6 +8,7 @@ import { apiService } from '../../services/apiService';
 
 interface RoomAccessInformationScreenProps {
   booking: Booking;
+  bookingId?: number | string;
   token?: string | null;
   onBack: () => void;
 }
@@ -75,10 +76,36 @@ const screenStyles = {
 
 const RoomAccessInformationScreen: React.FC<
   RoomAccessInformationScreenProps
-> = ({ booking, token, onBack }) => {
+> = ({ booking, bookingId, token, onBack }) => {
   const { t } = useTranslation();
   const [roomsFromApi, setRoomsFromApi] = useState<any[] | null>(null);
   const [bookingFromApi, setBookingFromApi] = useState<any | null>(null);
+
+  const resolveBookingId = () => {
+    const fromProp = Number(bookingId);
+    if (!Number.isNaN(fromProp) && fromProp > 0) return fromProp;
+
+    const fromBooking =
+      Number((booking as any)?.dbId ?? (booking as any)?.id ?? (booking as any)?.bookingId ?? (booking as any)?.booking_id);
+    if (!Number.isNaN(fromBooking) && fromBooking > 0) return fromBooking;
+
+    try {
+      const qs = new URLSearchParams(window.location.search);
+      const fromQuery = Number(qs.get('bookingId') ?? qs.get('booking_id'));
+      if (!Number.isNaN(fromQuery) && fromQuery > 0) return fromQuery;
+    } catch {
+      // ignore
+    }
+
+    try {
+      const stored = Number(localStorage.getItem('checkin_booking_id'));
+      if (!Number.isNaN(stored) && stored > 0) return stored;
+    } catch {
+      // ignore
+    }
+
+    return undefined;
+  };
 
   /* ---------- Date helpers ---------- */
 
@@ -94,12 +121,29 @@ const RoomAccessInformationScreen: React.FC<
   };
 
   useEffect(() => {
-    if (!token) return;
-
     let isActive = true;
-    apiService
-      .getBookingByToken(token)
-      .then((resp: any) => {
+
+    const run = async () => {
+      try {
+        if (token) {
+          const resp: any = await apiService.getBookingByToken(token);
+          const bk =
+            resp?.data?.booking ??
+            resp?.data ??
+            resp?.booking ??
+            resp;
+          const rooms = Array.isArray(bk?.rooms) ? bk.rooms : [];
+          if (isActive) {
+            setBookingFromApi(bk);
+            setRoomsFromApi(rooms);
+          }
+          return;
+        }
+
+        const bid = resolveBookingId();
+        if (!bid) return;
+
+        const resp: any = await apiService.getBookingDetailsById(bid);
         const bk =
           resp?.data?.booking ??
           resp?.data ??
@@ -110,19 +154,21 @@ const RoomAccessInformationScreen: React.FC<
           setBookingFromApi(bk);
           setRoomsFromApi(rooms);
         }
-      })
-      .catch((err) => {
+      } catch (err) {
         console.error('[RoomAccessInformation] fetch booking failed', err);
         if (isActive) {
           setBookingFromApi(null);
           setRoomsFromApi(null);
         }
-      });
+      }
+    };
+
+    run();
 
     return () => {
       isActive = false;
     };
-  }, [token]);
+  }, [token, bookingId, booking]);
 
   const rooms = roomsFromApi ?? booking?.rooms ?? [];
 

@@ -1081,6 +1081,14 @@ const App: React.FC = () => {
         return (
           <RoomAccessInformationScreen
             booking={booking!}
+            bookingId={
+              booking?.dbId ??
+              (booking as any)?.id ??
+              (booking as any)?.bookingId ??
+              (booking as any)?.booking_id ??
+              guestListBookingId ??
+              undefined
+            }
             token={checkinToken}
             onBack={() => navigateTo(Screen.PostCheckinDetails)}
           />
