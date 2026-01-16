@@ -378,6 +378,7 @@ const App: React.FC = () => {
       // ✅ 4) ยังไม่เช็คอิน → flow เดิม
       if (!bk) throw new Error("booking not found");
 
+      setIsGuestListReadOnly(false);
       const bookingId = extractBookingId(bk);
 
       setBooking({
