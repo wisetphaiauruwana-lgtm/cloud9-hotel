@@ -229,10 +229,52 @@ const App: React.FC = () => {
     try {
       // ✅ 1) เคส EnterCodeScreen ส่ง "ALREADY_CHECKEDIN"
       if (token === "ALREADY_CHECKEDIN") {
+        let bk: any | null = null;
         const raw = localStorage.getItem("checkedin_booking");
-        if (!raw) throw new Error("checkedin_booking not found");
+        if (raw) {
+          try {
+            bk = JSON.parse(raw);
+          } catch {
+            bk = null;
+          }
+        }
 
-        const bk = JSON.parse(raw);
+        if (!bk) {
+          const storedToken = localStorage.getItem("checkin_token");
+          if (storedToken) {
+            try {
+              const bkResp: any = await apiService.getBookingByToken(storedToken);
+              bk =
+                bkResp?.data?.booking ??
+                bkResp?.data ??
+                bkResp?.booking ??
+                bkResp ??
+                null;
+            } catch {
+              bk = null;
+            }
+          }
+        }
+
+        if (!bk) {
+          try {
+            const rawId = localStorage.getItem(CHECKIN_BOOKING_ID_KEY);
+            const bid = Number(rawId);
+            if (!Number.isNaN(bid) && bid > 0) {
+              const bkResp: any = await apiService.getBookingDetailsById(bid);
+              bk =
+                bkResp?.data?.booking ??
+                bkResp?.data ??
+                bkResp?.booking ??
+                bkResp ??
+                null;
+            }
+          } catch {
+            bk = null;
+          }
+        }
+
+        if (!bk) throw new Error("checkedin_booking not found");
 
         const safeBooking: Booking = {
           ...bk,

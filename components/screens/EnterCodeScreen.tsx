@@ -113,8 +113,33 @@ const EnterCodeScreen: React.FC<EnterCodeScreenProps> = ({ onSubmit, onBack, err
         try { localStorage.setItem(CHECKIN_BOOKING_ID_KEY, String(bookingId)); } catch { }
       }
 
-      if (booking && (booking.checkedInAt || booking.status === "Checked-In")) {
-        localStorage.setItem("checkedin_booking", JSON.stringify(booking));
+      const statusRaw =
+        resp?.status ??
+        resp?.data?.status ??
+        booking?.status ??
+        '';
+      const status = String(statusRaw || '').toLowerCase();
+      const isAlreadyCheckedIn =
+        !!booking?.checkedInAt ||
+        status === 'already_checked_in' ||
+        status === 'checked-in' ||
+        status === 'checkedin' ||
+        status === 'checked_in' ||
+        status === 'checked in' ||
+        String(booking?.status || '').toLowerCase() === 'checked-in';
+
+      if (isAlreadyCheckedIn) {
+        let checkedInBooking = booking;
+        if (!checkedInBooking && bookingId) {
+          try {
+            checkedInBooking = await apiService.getBookingDetailsById(bookingId);
+          } catch {
+            checkedInBooking = booking;
+          }
+        }
+        if (checkedInBooking) {
+          localStorage.setItem("checkedin_booking", JSON.stringify(checkedInBooking));
+        }
         if (token) {
           localStorage.setItem('checkin_token', String(token));
         }
