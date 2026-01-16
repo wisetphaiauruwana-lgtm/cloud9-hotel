@@ -713,6 +713,7 @@ const GuestListScreen: React.FC<GuestListScreenProps> = ({
 
   // Sync guest list when parent updates (e.g., Add Guest)
   useEffect(() => {
+    if (isReadOnly) return;
     const incoming = normalizeGuestsForDisplay(initialGuests);
     const incomingIds = incoming.map(g => g.id).join('|');
     const localIds = guests.map(g => g.id).join('|');
