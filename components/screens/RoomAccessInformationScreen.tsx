@@ -196,18 +196,22 @@ const RoomAccessInformationScreen: React.FC<
     bookingFromApi?.stay?.from ??
     (bookingFromApi as any)?.checkIn ??
     (bookingFromApi as any)?.checkInDate ??
+    (bookingFromApi as any)?.stayDuration?.split?.(' - ')?.[0] ??
     (booking as any)?.stay?.from ??
     (booking as any)?.checkIn ??
     (booking as any)?.checkInDate ??
+    (booking as any)?.stayDuration?.split?.(' - ')?.[0] ??
     '';
 
   const stayTo =
     bookingFromApi?.stay?.to ??
     (bookingFromApi as any)?.checkOut ??
     (bookingFromApi as any)?.checkOutDate ??
+    (bookingFromApi as any)?.stayDuration?.split?.(' - ')?.[1] ??
     (booking as any)?.stay?.to ??
     (booking as any)?.checkOut ??
     (booking as any)?.checkOutDate ??
+    (booking as any)?.stayDuration?.split?.(' - ')?.[1] ??
     '';
 
   return (
