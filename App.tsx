@@ -434,8 +434,36 @@ const App: React.FC = () => {
       if (tokenFromUrl) {
         setAllowReservationFromToken(true);
         handleCodeSubmit(tokenFromUrl);
-      } else {
-        navigateTo(Screen.EnterCode);
+      } else if (bookingIdFromUrl) {
+        const bookingIdNum = Number(bookingIdFromUrl);
+        if (!Number.isNaN(bookingIdNum) && bookingIdNum > 0) {
+          setIsLoading(true);
+          (async () => {
+            try {
+              const bkResp: any = await apiService.getBookingDetailsById(bookingIdNum);
+              const bk: any =
+                bkResp?.data?.booking ??
+                bkResp?.data ??
+                bkResp?.booking ??
+                bkResp;
+
+              setBooking({
+                ...(bk ?? {}),
+                dbId: bookingIdNum,
+              });
+              setGuestListBookingId(bookingIdNum);
+              setIsGuestListReadOnly(true);
+              navigateTo(Screen.PostCheckinDetails);
+            } catch (err) {
+              console.error('Auto bookingId load failed', err);
+              navigateTo(Screen.EnterCode);
+            } finally {
+              setIsLoading(false);
+            }
+          })();
+        } else {
+          navigateTo(Screen.EnterCode);
+        }
       }
 
       q.delete('token');
