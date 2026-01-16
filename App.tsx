@@ -162,6 +162,25 @@ const normalizeGuestsForDisplay = (list: Guest[]) => {
   return result;
 };
 
+const isCheckedOutBooking = (b: any): boolean => {
+  if (!b) return false;
+  const statusRaw =
+    b?.status ??
+    b?.bookingStatus ??
+    b?.booking_status ??
+    b?.roomStatus ??
+    b?.room_status ??
+    '';
+  const status = String(statusRaw).toLowerCase();
+  if (status.includes('checked-out') || status.includes('checked out') || status.includes('checkout')) {
+    return true;
+  }
+  if (b?.checkedOutAt || b?.checked_out_at || b?.checkoutCompleted === true) {
+    return true;
+  }
+  return false;
+};
+
 const App: React.FC = () => {
   const SCREEN_STORAGE_KEY = "current_screen";
   const [screen, setScreen] = useState<Screen>(() => {
@@ -307,6 +326,15 @@ const App: React.FC = () => {
 
       console.log("🔥 Booking from API =", bk);
 
+      if (isCheckedOutBooking(bk)) {
+        setBooking(null);
+        setGuests([]);
+        setIsGuestListReadOnly(false);
+        setAllowReservationFromToken(false);
+        navigateTo(Screen.EnterCode);
+        return;
+      }
+
       // ✅ 3) เคส “เช็คอินแล้ว” จาก API
       if (bk?.__alreadyCheckedIn) {
         const safeBooking: Booking = {
@@ -446,6 +474,15 @@ const App: React.FC = () => {
                 bkResp?.data ??
                 bkResp?.booking ??
                 bkResp;
+
+              if (isCheckedOutBooking(bk)) {
+                setBooking(null);
+                setGuests([]);
+                setIsGuestListReadOnly(false);
+                setAllowReservationFromToken(false);
+                navigateTo(Screen.EnterCode);
+                return;
+              }
 
               setBooking({
                 ...(bk ?? {}),
