@@ -101,6 +101,7 @@
     "newGuest": "ผู้เข้าพักใหม่",
     "edit": "แก้ไข",
     "progress": "{progress}%",
+    "noGuests": "ไม่พบข้อมูลผู้เข้าพัก",
     "takePhoto": "ถ่ายภาพใบหน้า",
     "captureDocument": "ถ่ายภาพเอกสารยืนยันตัวตน",
     "verifiedImage": "รูปภาพที่ยืนยันแล้ว",

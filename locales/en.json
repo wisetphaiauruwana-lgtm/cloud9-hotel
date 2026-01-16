@@ -106,6 +106,7 @@
     "newGuest": "New Guest",
     "edit": "Edit",
     "progress": "{progress}%",
+    "noGuests": "No guests found.",
     "takePhoto": "Take Your Photo",
     "captureDocument": "Capture Verification Document",
     "verifiedImage": "Verified Image",
