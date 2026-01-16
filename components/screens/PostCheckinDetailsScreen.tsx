@@ -242,6 +242,15 @@ const PostCheckinDetailsScreen: React.FC<PostCheckinDetailsScreenProps> = ({
     );
   }, [booking, bookingId, liveBooking, scannedBookingId]);
 
+  const liveBookingId = useMemo(() => {
+    return (
+      toNumberOrUndef(liveBooking?.dbId) ??
+      toNumberOrUndef(liveBooking?.id) ??
+      toNumberOrUndef(liveBooking?.bookingId) ??
+      toNumberOrUndef(liveBooking?.booking_id)
+    );
+  }, [liveBooking]);
+
   useEffect(() => {
     if (!resolvedBookingId) return;
     try {
@@ -286,7 +295,7 @@ const PostCheckinDetailsScreen: React.FC<PostCheckinDetailsScreenProps> = ({
     let mounted = true;
     const run = async () => {
       if (!resolvedBookingId) return;
-      if (liveBooking) return;
+      if (liveBookingId === resolvedBookingId) return;
       try {
         const bkResp: any = await apiService.getBookingDetailsById(resolvedBookingId);
         const bk: any = unwrapBooking(bkResp);
@@ -300,7 +309,7 @@ const PostCheckinDetailsScreen: React.FC<PostCheckinDetailsScreenProps> = ({
     return () => {
       mounted = false;
     };
-  }, [resolvedBookingId, liveBooking]);
+  }, [resolvedBookingId, liveBookingId]);
 
   // --------------------
   // 2) โหลด guests แล้ว merge กับ cache (ให้ cache ชนะ)
@@ -331,14 +340,8 @@ const PostCheckinDetailsScreen: React.FC<PostCheckinDetailsScreenProps> = ({
       // เช็คว่า guestList ที่ดึงมามีค่าหรือไม่
       const backendList: any[] = await apiService.fetchGuests(bid);
 
-      const cacheList = loadGuestCache(bid);
-      const merged = mergeGuestsPreferCache(
-        Array.isArray(backendList) ? backendList : [],
-        Array.isArray(cacheList) ? cacheList : []
-      );
-
       if (!mounted) return;
-      setGuestList(merged);
+      setGuestList(Array.isArray(backendList) ? backendList : []);
     } catch {
       // หากเกิดข้อผิดพลาด, ใช้ข้อมูลจาก cache
       const cacheOnly = loadGuestCache(bid);
