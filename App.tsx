@@ -1070,48 +1070,25 @@ const App: React.FC = () => {
             onCheckout={() => navigateTo(Screen.Checkout)}
             onViewGuests={(bookingIdArg) => {
               setIsGuestListReadOnly(true);
-              if (bookingIdArg) setGuestListBookingId(Number(bookingIdArg));
+              const bookingIdNum = bookingIdArg ? Number(bookingIdArg) : undefined;
+              if (bookingIdNum) setGuestListBookingId(bookingIdNum);
 
               try {
                 const q = new URLSearchParams(window.location.search);
-                if (bookingIdArg) q.set("bookingId", String(bookingIdArg));
+                if (bookingIdNum) q.set("bookingId", String(bookingIdNum));
                 const newSearch = q.toString();
                 const newUrl =
                   window.location.pathname +
                   (newSearch ? `?${newSearch}` : "") +
                   window.location.hash;
                 window.history.replaceState({}, document.title, newUrl);
+                if (bookingIdNum) localStorage.setItem(CHECKIN_BOOKING_ID_KEY, String(bookingIdNum));
               } catch {
                 // ignore
               }
 
-              (async () => {
-                const rv =
-                  extractBookingId({ dbId: bookingIdArg }) ??
-                  extractBookingId(booking);
-                if (!rv) {
-                  setGuests([]);
-                  setError('ไม่พบ bookingId');
-                  navigateTo(Screen.GuestList);
-                  return;
-                }
-
-                try {
-                  const resp: any = await apiService.fetchGuests(rv);
-                  const rawGuests = Array.isArray(resp) ? resp : (resp?.data ?? []);
-                  const uiGuests = rawGuests.map((g: any, idx: number) =>
-                    mapBackendGuestToUi(g, idx)
-                  );
-                  const cached = loadGuestCache(rv);
-                  const merged = mergeGuestsPreferCache(uiGuests, cached);
-                  setGuests(normalizeGuestsForDisplay(merged));
-                } catch {
-                  const cached = loadGuestCache(rv);
-                  setGuests(normalizeGuestsForDisplay(cached));
-                }
-                setGuestListBookingId(rv);
-                navigateTo(Screen.GuestList);
-              })();
+              setGuests([]);
+              navigateTo(Screen.GuestList);
             }}
             onViewRoomAccess={() => navigateTo(Screen.RoomAccessInformation)}
             onExtendStay={() => navigateTo(Screen.ExtendStay)}

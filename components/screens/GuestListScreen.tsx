@@ -16,6 +16,7 @@ import {
 } from "../../utils/guestCache";
 
 const CONSENT_ID = 1;
+const CHECKIN_BOOKING_ID_KEY = "checkin_booking_id";
 
 /* ---------------- UI components (same style) ---------------- */
 const editableFieldStyles = {
@@ -384,19 +385,30 @@ const toNumberOrUndef = (v: any): number | undefined => {
   return Number.isNaN(n) ? undefined : n;
 };
 
-const getTokenFromQuery = () => {
-  try {
-    const qs = new URLSearchParams(window.location.search);
-    return qs.get('token');
-  } catch {
-    return null;
-  }
-};
+const unwrapBooking = (resp: any) =>
+  resp?.data?.booking ?? resp?.data ?? resp?.booking ?? resp?.payload ?? resp;
 
 const getBookingIdFromQuery = () => {
   try {
     const qs = new URLSearchParams(window.location.search);
     return qs.get('bookingId');
+  } catch {
+    return null;
+  }
+};
+
+const readBookingIdFromStorage = () => {
+  try {
+    return toNumberOrUndef(localStorage.getItem(CHECKIN_BOOKING_ID_KEY));
+  } catch {
+    return undefined;
+  }
+};
+
+const getTokenFromQuery = () => {
+  try {
+    const qs = new URLSearchParams(window.location.search);
+    return qs.get('token');
   } catch {
     return null;
   }
@@ -532,6 +544,9 @@ const GuestListScreen: React.FC<GuestListScreenProps> = ({
 
   const [pendingConsentLogs, setPendingConsentLogs] = useState<PendingConsentItem[]>([]);
   const [deletingSelected, setDeletingSelected] = useState(false);
+  const [bookingDetail, setBookingDetail] = useState<any>(null);
+  const [bookingDetailLoading, setBookingDetailLoading] = useState(false);
+  const [bookingDetailError, setBookingDetailError] = useState<string | null>(null);
   const deleteSelectedLabelRaw = t('guestList.deleteSelected');
   const deleteSelectedLabel = deleteSelectedLabelRaw !== 'guestList.deleteSelected'
     ? deleteSelectedLabelRaw
@@ -542,7 +557,9 @@ const GuestListScreen: React.FC<GuestListScreenProps> = ({
   // bookingId from state > prop
   const { bookingId: bookingIdFromState } = (location.state || {}) as { bookingId?: number };
   const bookingIdFromQuery = toNumberOrUndef(getBookingIdFromQuery());
-  const finalBookingId = bookingIdFromState ?? bookingId ?? bookingIdFromQuery;
+  const bookingIdFromStorage = readBookingIdFromStorage();
+  const finalBookingId =
+    bookingIdFromState ?? bookingId ?? bookingIdFromQuery ?? bookingIdFromStorage;
 
   const initialToken =
     (location.state as any)?.token ??
@@ -551,9 +568,8 @@ const GuestListScreen: React.FC<GuestListScreenProps> = ({
     localStorage.getItem('checkin_token');
 
   const [tokenUsed, setTokenUsed] = useState<string | null>(initialToken ? String(initialToken) : null);
-  const [resolvedBookingId, setResolvedBookingId] = useState<number | undefined>(
-    toNumberOrUndef(finalBookingId)
-  );
+  const [resolvedBookingId, setResolvedBookingId] = useState<number | undefined>(undefined);
+  const effectiveBookingId = toNumberOrUndef(resolvedBookingId ?? finalBookingId);
 
   // ✅ FIX: bookingId เปลี่ยน -> reset state กันของเก่าค้าง
   useEffect(() => {
@@ -563,7 +579,54 @@ const GuestListScreen: React.FC<GuestListScreenProps> = ({
     setLoading(false);
     setIsEditing(false);
     setSelectedGuestIds([]);
-  }, [finalBookingId]);
+  }, [effectiveBookingId, isReadOnly, location.key]);
+
+  useEffect(() => {
+    if (!effectiveBookingId) return;
+    try {
+      localStorage.setItem(CHECKIN_BOOKING_ID_KEY, String(effectiveBookingId));
+    } catch {
+      // ignore storage errors
+    }
+    try {
+      const qs = new URLSearchParams(window.location.search);
+      qs.set('bookingId', String(effectiveBookingId));
+      const newSearch = qs.toString();
+      const newUrl =
+        window.location.pathname + (newSearch ? `?${newSearch}` : '') + window.location.hash;
+      window.history.replaceState({}, document.title, newUrl);
+    } catch {
+      // ignore
+    }
+  }, [effectiveBookingId]);
+
+  useEffect(() => {
+    let mounted = true;
+    if (!effectiveBookingId) {
+      setBookingDetail(null);
+      return;
+    }
+    setBookingDetailLoading(true);
+    setBookingDetailError(null);
+
+    apiService
+      .getBookingDetailsById(effectiveBookingId)
+      .then((resp: any) => {
+        if (!mounted) return;
+        setBookingDetail(unwrapBooking(resp));
+      })
+      .catch((err) => {
+        if (!mounted) return;
+        setBookingDetailError(err?.message || 'Failed to load booking');
+      })
+      .finally(() => {
+        if (mounted) setBookingDetailLoading(false);
+      });
+
+    return () => {
+      mounted = false;
+    };
+  }, [effectiveBookingId]);
 
   useEffect(() => {
     const next =
@@ -617,9 +680,10 @@ const GuestListScreen: React.FC<GuestListScreenProps> = ({
 
   // ✅ hydrate จาก cache/props แค่ครั้งแรก แล้วให้ API fetch มาอัปเดตภายหลัง
   useEffect(() => {
+    if (isReadOnly) return;
     if (guests.length > 0) return;
 
-    const bid = toNumberOrUndef(resolvedBookingId ?? finalBookingId);
+    const bid = effectiveBookingId;
     if (bid) {
       const cachedGuests = loadGuestCache(bid);
       if (cachedGuests.length > 0) {
@@ -631,7 +695,7 @@ const GuestListScreen: React.FC<GuestListScreenProps> = ({
     if (initialGuests.length > 0) {
       setGuests(normalizeGuestsForDisplay(initialGuests));
     }
-  }, [finalBookingId, resolvedBookingId, initialGuests, guests.length]);
+  }, [effectiveBookingId, initialGuests, guests.length]);
 
   // Sync guest list when parent updates (e.g., Add Guest)
   useEffect(() => {
@@ -693,7 +757,7 @@ const handleUpdateGuestDetails = (guestId: string, details: Guest["details"]) =>
     });
 
     // บันทึกข้อมูลลง localStorage หรือส่งไปยัง backend
-    const bid = toNumberOrUndef(resolvedBookingId ?? finalBookingId);
+    const bid = effectiveBookingId;
     if (bid) saveGuestCache(bid, next); // บันทึกข้อมูลลง localStorage
 
     return next;
@@ -712,7 +776,7 @@ const handleUpdateGuestDetails = (guestId: string, details: Guest["details"]) =>
       try {
         if (fetchedRef.current) return;
 
-        const bid = toNumberOrUndef(finalBookingId ?? resolvedBookingId);
+        const bid = effectiveBookingId;
         const token = tokenUsed ? String(tokenUsed).trim() : '';
 
         if (!bid && !token) return;
@@ -727,9 +791,12 @@ const handleUpdateGuestDetails = (guestId: string, details: Guest["details"]) =>
           if (!mounted) return;
 
           const backendMapped = mapApiGuestsToUi(resp); // แปลงข้อมูลจาก API
-          const cached = loadGuestCache(bid); // โหลดข้อมูลจาก cache
+          if (isReadOnly) {
+            setGuests(normalizeGuestsForDisplay(backendMapped)); // แสดงผลข้อมูลจาก backend เท่านั้น
+            return;
+          }
 
-          // ผสมข้อมูลจาก API และ Cache
+          const cached = loadGuestCache(bid); // โหลดข้อมูลจาก cache
           const merged = mergeGuestsPreferCache(backendMapped, cached);
           setGuests(normalizeGuestsForDisplay(merged)); // แสดงผลข้อมูล
           return;
@@ -752,9 +819,12 @@ const handleUpdateGuestDetails = (guestId: string, details: Guest["details"]) =>
           if (!mounted) return;
 
           const backendMapped = mapApiGuestsToUi(resp);
-          const cached = loadGuestCache(bookingIdNum2);
+          if (isReadOnly) {
+            setGuests(normalizeGuestsForDisplay(backendMapped)); // แสดงผลข้อมูลจาก backend เท่านั้น
+            return;
+          }
 
-          // ผสมข้อมูลจาก API และ Cache
+          const cached = loadGuestCache(bookingIdNum2);
           const merged = mergeGuestsPreferCache(backendMapped, cached);
           setGuests(normalizeGuestsForDisplay(merged)); // แสดงผลข้อมูล
           return;
@@ -771,7 +841,7 @@ const handleUpdateGuestDetails = (guestId: string, details: Guest["details"]) =>
 
     run();
     return () => { mounted = false; };
-  }, [finalBookingId, resolvedBookingId, tokenUsed, isReadOnly]);
+  }, [effectiveBookingId, tokenUsed, isReadOnly]);
 
   const handleRetry = () => {
     fetchedRef.current = false;
@@ -816,7 +886,7 @@ const handleUpdateGuestDetails = (guestId: string, details: Guest["details"]) =>
 
     try {
       // 1️⃣ ตรวจสอบว่าเรามี bookingId หรือไม่
-      const bookingIdNum = toNumberOrUndef(resolvedBookingId ?? finalBookingId);
+      const bookingIdNum = effectiveBookingId;
       if (!bookingIdNum) throw new Error('ไม่พบ bookingId');
 
       // 2️⃣ ตรวจสอบว่า token มีหรือไม่
@@ -923,7 +993,7 @@ const handleConfirmDeleteSelected = async () => {
       const next = (prev ?? []).filter(g => g.isMainGuest || !selectedGuestIds.includes(g.id));
 
       // 2) sync cache ตาม bookingId
-      const bid = toNumberOrUndef(resolvedBookingId ?? finalBookingId);
+      const bid = effectiveBookingId;
       if (bid) {
         // เซฟทันทีเพื่อไม่ให้ “ของเก่ากลับมา”
         saveGuestCache(bid, next); // บันทึกข้อมูลที่อัพเดตใน localStorage

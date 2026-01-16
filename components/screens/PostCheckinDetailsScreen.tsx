@@ -614,14 +614,15 @@ const PostCheckinDetailsScreen: React.FC<PostCheckinDetailsScreenProps> = ({
             <ActionLink
               label={t('postCheckin.viewGuests')}
               onClick={() => {
-                if (actionBookingId) {
+                const currentBookingId = resolvedBookingId ?? actionBookingId;
+                if (currentBookingId) {
                   try {
-                    localStorage.setItem(CHECKIN_BOOKING_ID_KEY, String(actionBookingId));
+                    localStorage.setItem(CHECKIN_BOOKING_ID_KEY, String(currentBookingId));
                   } catch {
                     // ignore storage errors
                   }
                 }
-                onViewGuests(actionBookingId);
+                onViewGuests(currentBookingId);
               }}
             />
             <ActionLink
