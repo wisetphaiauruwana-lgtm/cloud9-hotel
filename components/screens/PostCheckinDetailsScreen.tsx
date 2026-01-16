@@ -390,9 +390,12 @@ const PostCheckinDetailsScreen: React.FC<PostCheckinDetailsScreenProps> = ({
     baseBooking?.to ||
     '';
 
-  const guestSummary = baseBooking?.guests || {};
-  const adults = (guestSummary as any)?.adults ?? (guestSummary as any)?.totalAdults ?? 0;
-  const children = (guestSummary as any)?.children ?? (guestSummary as any)?.totalChildren ?? 0;
+  const stayDurationText = String(baseBooking?.stayDuration ?? '').trim();
+  const stayFromText = stayFrom || (stayDurationText ? stayDurationText.split(' - ')[0] : '');
+  const stayToText = stayTo || (stayDurationText ? stayDurationText.split(' - ')[1] : '');
+
+  const adults = baseBooking?.adults ?? baseBooking?.guests?.adults ?? baseBooking?.totalAdults ?? 0;
+  const children = baseBooking?.children ?? baseBooking?.guests?.children ?? baseBooking?.totalChildren ?? 0;
 
   const numGuestsValue =
     t('reservationDetails.numGuestsValue', { adults, children }) ||
@@ -402,7 +405,11 @@ const PostCheckinDetailsScreen: React.FC<PostCheckinDetailsScreenProps> = ({
   const roomsCount = rooms.length;
   const safeRooms = (rooms as any[]) ?? [];
 
-  const nights = (rooms as any)?.[0]?.nights ?? calculateNights(stayFrom, stayTo) ?? '-';
+  const nights =
+    baseBooking?.nights ??
+    (rooms as any)?.[0]?.nights ??
+    calculateNights(stayFromText || stayFrom, stayToText || stayTo) ??
+    '-';
 
   const qrUrl = useMemo(() => {
     const bid = resolvedBookingId;
@@ -522,16 +529,20 @@ const PostCheckinDetailsScreen: React.FC<PostCheckinDetailsScreenProps> = ({
 
             <DetailRow label={t('postCheckin.numGuests')} value={numGuestsValue} />
 
-            <DetailRow
-              label={t('postCheckin.stayDuration')}
-              value={
-                <>
-                  {t('reservationDetails.from')} {formatDateOnly(stayFrom)}
-                  <br />
-                  {t('reservationDetails.to')} {formatDateOnly(stayTo)}
-                </>
-              }
-            />
+                <DetailRow
+                  label={t('postCheckin.stayDuration')}
+                  value={
+                    stayDurationText ? (
+                      stayDurationText
+                    ) : (
+                      <>
+                        {t('reservationDetails.from')} {formatDateOnly(stayFromText || stayFrom)}
+                        <br />
+                        {t('reservationDetails.to')} {formatDateOnly(stayToText || stayTo)}
+                      </>
+                    )
+                  }
+                />
 
             <DetailRow
               label={t('reservationDetails.nights')}
@@ -545,9 +556,22 @@ const PostCheckinDetailsScreen: React.FC<PostCheckinDetailsScreenProps> = ({
                   <div className="font-medium">{roomsCount}</div>
                   {safeRooms.map((r, idx) => {
                     const roomNumber =
-                      r.room?.roomNumber ?? r.room?.roomCode ?? r.roomNumber ?? r.roomCode ?? r.number ?? '-';
+                      r.room?.roomNumber ??
+                      r.room?.roomCode ??
+                      r.roomNumber ??
+                      r.roomCode ??
+                      r.roomDetails?.roomNumber ??
+                      r.roomDetails?.roomCode ??
+                      r.number ??
+                      '-';
 
-                    const roomType = r.room?.type ?? r.room?.name ?? r.roomType ?? '-';
+                    const roomType =
+                      r.room?.type ??
+                      r.room?.name ??
+                      r.roomType ??
+                      r.roomDetails?.type ??
+                      r.roomDetails?.name ??
+                      '-';
 
                     return (
                       <div key={idx} className="ml-2 text-gray-800">
