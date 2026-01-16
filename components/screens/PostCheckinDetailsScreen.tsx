@@ -161,6 +161,15 @@ const mergeGuestsPreferCache = (backendList: any[], cacheList: any[]) => {
   return out;
 };
 
+const getMainGuestNameFromList = (list: any[]) => {
+  if (!Array.isArray(list) || list.length === 0) return '';
+  const mg = list.find((g: any) => !!(g.isMainGuest ?? g.is_main_guest ?? g.mainGuest)) || list[0];
+  const first = mg?.details?.firstName ?? mg?.first_name ?? mg?.firstName ?? '';
+  const last = mg?.details?.lastName ?? mg?.last_name ?? mg?.lastName ?? '';
+  const name = (mg?.full_name ?? mg?.fullName ?? mg?.name ?? `${first} ${last}`)?.toString().trim();
+  return name || '';
+};
+
 /* --------------------
    Screen
 -------------------- */
@@ -339,21 +348,23 @@ const PostCheckinDetailsScreen: React.FC<PostCheckinDetailsScreenProps> = ({
   // ✅ FIX: รองรับทั้ง details camelCase และ snake_case
   // --------------------
   const mainGuestFromGuests = useMemo(() => {
-    if (!guestList.length) return '';
-    const mg = guestList.find((g: any) => !!(g.isMainGuest ?? g.is_main_guest ?? g.mainGuest)) || guestList[0];
-    const first = mg?.details?.firstName ?? mg?.first_name ?? mg?.firstName ?? '';
-    const last = mg?.details?.lastName ?? mg?.last_name ?? mg?.lastName ?? '';
-    const name = (mg?.full_name ?? mg?.fullName ?? mg?.name ?? `${first} ${last}`)?.toString().trim();
-    return name || '';
+    return getMainGuestNameFromList(guestList);
   }, [guestList]);
+
+  const mainGuestFromCache = useMemo(() => {
+    if (!resolvedBookingId) return '';
+    const cached = loadGuestCache(resolvedBookingId);
+    return getMainGuestNameFromList(cached);
+  }, [resolvedBookingId]);
 
 
   // --------------------
   // Normalize display fields
   // --------------------
   const mainGuest =
-    pickMainGuestFromBooking(liveBooking) ||
     mainGuestFromGuests ||
+    mainGuestFromCache ||
+    pickMainGuestFromBooking(liveBooking) ||
     pickMainGuestFromBooking(booking) ||
     '-';
 
