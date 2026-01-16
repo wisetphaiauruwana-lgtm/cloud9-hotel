@@ -327,6 +327,7 @@ const App: React.FC = () => {
       console.log("🔥 Booking from API =", bk);
 
       if (isCheckedOutBooking(bk)) {
+        setError(t('enterCode.checkedOut') ?? 'เช็กเอ้าแล้ว');
         setBooking(null);
         setGuests([]);
         setIsGuestListReadOnly(false);
@@ -445,7 +446,9 @@ const App: React.FC = () => {
       navigateTo(Screen.ReservationDetails);
     } catch (err) {
       console.error("❌ handleCodeSubmit error =", err);
-      setError(t("enterCode.errorMessage") ?? "Invalid token");
+      const rawMsg = (err as any)?.code ?? (err as any)?.message;
+      const translated = rawMsg ? t(String(rawMsg)) : '';
+      setError(translated && translated !== rawMsg ? translated : (t("enterCode.errorMessage") ?? "Invalid token"));
     } finally {
       setIsLoading(false);
     }
@@ -476,6 +479,7 @@ const App: React.FC = () => {
                 bkResp;
 
               if (isCheckedOutBooking(bk)) {
+                setError(t('enterCode.checkedOut') ?? 'เช็กเอ้าแล้ว');
                 setBooking(null);
                 setGuests([]);
                 setIsGuestListReadOnly(false);

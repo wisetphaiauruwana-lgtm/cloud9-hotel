@@ -37,7 +37,9 @@
     "successMessage": "Code is valid! Loading reservation...",
     "invalidOrExpired": "Invalid or expired code.",
     "networkError": "Cannot connect to server. Please try again.",
-    "errorMessage": "Invalid or expired link."
+    "errorMessage": "Invalid or expired link.",
+    "checkedOut": "Checked out",
+    "errorMessageX": "Checked out"
   }
 ,
 "reservationDetails": {
