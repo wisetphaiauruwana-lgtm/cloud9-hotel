@@ -113,6 +113,12 @@ const EnterCodeScreen: React.FC<EnterCodeScreenProps> = ({ onSubmit, onBack, err
         try { localStorage.setItem(CHECKIN_BOOKING_ID_KEY, String(bookingId)); } catch { }
       }
 
+      if (booking && (booking.checkedOutAt || booking.status === "Checked-Out")) {
+        setIsValid(false);
+        setMessage(t('enterCode.checkedOut') || "การเช็กเอ้าเสร็จสิ้นแล้ว ไม่สามารถเข้าระบบได้");
+        return;
+      }
+
       if (booking && (booking.checkedInAt || booking.status === "Checked-In")) {
         localStorage.setItem("checkedin_booking", JSON.stringify(booking));
         if (token) {

@@ -5,6 +5,7 @@ import { Booking } from '../../types';
 import Header from '../layout/Header';
 import Footer from '../layout/Footer';
 import { ChevronRightIcon, LocationIcon, PhoneIcon } from '../icons/Icons';
+import Button from '../ui/Button';
 import { useTranslation } from '../../hooks/useTranslation';
 import { QRCodeCanvas } from 'qrcode.react';
 
@@ -583,7 +584,9 @@ const PostCheckinDetailsScreen: React.FC<PostCheckinDetailsScreenProps> = ({
 
       <div className="px-4 pb-6">
       <div className="mx-auto w-full max-w-[360px] md:max-w-[600px] lg:max-w-[720px]">
-
+          <Button onClick={onCheckout} variant="danger">
+            {t('buttons.checkout') || 'CHECK OUT'}
+          </Button>
         </div>
       </div>
 
