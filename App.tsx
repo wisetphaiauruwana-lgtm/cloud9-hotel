@@ -59,8 +59,20 @@ const mapBackendGuestToUi = (g: any, idx: number): Guest => {
       ?.toString()
       .trim() || `Guest ${idx + 1}`;
 
-  const faceImage = g.faceImage ?? g.face_image ?? g.face_image_base64 ?? '';
-  const documentImage = g.documentImage ?? g.document_image ?? g.document_image_base64 ?? '';
+  const faceImage =
+    g.faceImage ??
+    g.faceImagePath ??
+    g.face_image ??
+    g.face_image_path ??
+    g.face_image_base64 ??
+    '';
+  const documentImage =
+    g.documentImage ??
+    g.documentImagePath ??
+    g.document_image ??
+    g.document_image_path ??
+    g.document_image_base64 ??
+    '';
 
   const docTypeRaw = (g.documentType ?? g.id_type ?? '').toString().toUpperCase();
   const documentType =

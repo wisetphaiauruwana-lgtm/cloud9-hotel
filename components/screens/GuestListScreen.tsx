@@ -486,8 +486,20 @@ const mapApiGuestsToUi = (raw: any): Guest[] => {
         docTypeRaw.includes('ID') ? DocumentType.IDCard :
           (g.documentType ?? DocumentType.IDCard);
 
-    const faceImage = g.faceImage ?? g.face_image ?? g.face_image_base64 ?? '';
-    const documentImage = g.documentImage ?? g.document_image ?? g.document_image_base64 ?? '';
+    const faceImage =
+      g.faceImage ??
+      g.faceImagePath ??
+      g.face_image ??
+      g.face_image_path ??
+      g.face_image_base64 ??
+      '';
+    const documentImage =
+      g.documentImage ??
+      g.documentImagePath ??
+      g.document_image ??
+      g.document_image_path ??
+      g.document_image_base64 ??
+      '';
 
     const progress =
       typeof g.progress === 'number'
