@@ -118,13 +118,6 @@ const GuestListItem: React.FC<GuestListItemProps> = ({
   const faceSrc = toImageSrc(guest.faceImage);
   const documentSrc = toImageSrc(guest.documentImage);
 
-  const toBase64Payload = (value?: string) => {
-    const v = String(value ?? '').trim();
-    if (!v) return undefined;
-    if (v.startsWith('http://') || v.startsWith('https://')) return undefined;
-    return v; // data URI or raw base64
-  };
-
   useEffect(() => { setDetails(guest.details); }, [guest.details]);
 
   const renderDetailsFields = () => (
@@ -416,6 +409,13 @@ const toNumberOrUndef = (v: any): number | undefined => {
   if (v === undefined || v === null) return undefined;
   const n = Number(v);
   return Number.isNaN(n) ? undefined : n;
+};
+
+const toBase64Payload = (value?: string) => {
+  const v = String(value ?? '').trim();
+  if (!v) return undefined;
+  if (v.startsWith('http://') || v.startsWith('https://')) return undefined;
+  return v; // data URI or raw base64
 };
 
 const unwrapBooking = (resp: any) =>
