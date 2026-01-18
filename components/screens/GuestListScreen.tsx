@@ -108,17 +108,22 @@ const GuestListItem: React.FC<GuestListItemProps> = ({
   const displayDOB = details?.dateOfBirth ? String(details.dateOfBirth).split('T')[0] : '';
   const isFilled = (v: any) => String(v ?? '').trim() !== '';
 
-  const faceSrc = guest.faceImage
-    ? String(guest.faceImage).startsWith('data:')
-      ? String(guest.faceImage)
-      : `data:image/jpeg;base64,${guest.faceImage}`
-    : undefined;
+  const toImageSrc = (value?: string) => {
+    const v = String(value ?? '').trim();
+    if (!v) return undefined;
+    if (v.startsWith('data:') || v.startsWith('http://') || v.startsWith('https://')) return v;
+    return `data:image/jpeg;base64,${v}`;
+  };
 
-  const documentSrc = guest.documentImage
-    ? String(guest.documentImage).startsWith('data:')
-      ? String(guest.documentImage)
-      : `data:image/jpeg;base64,${guest.documentImage}`
-    : undefined;
+  const faceSrc = toImageSrc(guest.faceImage);
+  const documentSrc = toImageSrc(guest.documentImage);
+
+  const toBase64Payload = (value?: string) => {
+    const v = String(value ?? '').trim();
+    if (!v) return undefined;
+    if (v.startsWith('http://') || v.startsWith('https://')) return undefined;
+    return v; // data URI or raw base64
+  };
 
   useEffect(() => { setDetails(guest.details); }, [guest.details]);
 
@@ -959,8 +964,8 @@ const handleUpdateGuestDetails = (guestId: string, details: Guest["details"]) =>
           currentAddress: g.details?.currentAddress,
           documentType: mapDocumentTypeToApi(g.documentType),
           documentNumber: g.details?.documentNumber,
-          faceImageBase64: g.faceImage || undefined,
-          documentImageBase64: g.documentImage || undefined,
+          faceImageBase64: toBase64Payload(g.faceImage),
+          documentImageBase64: toBase64Payload(g.documentImage),
         };
 
         const created = await apiService.createGuest(payload);

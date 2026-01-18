@@ -456,7 +456,21 @@ const App: React.FC = () => {
       navigateTo(Screen.ReservationDetails);
     } catch (err) {
       console.error("❌ handleCodeSubmit error =", err);
-      const rawMsg = (err as any)?.code ?? (err as any)?.message;
+      const errCode = (err as any)?.code ?? '';
+      const errMsg = String((err as any)?.message ?? '');
+      if (
+        errCode === "error.bookingCheckedOut" ||
+        errMsg.toLowerCase().includes("bookingcheckedout") ||
+        errMsg.toLowerCase().includes("checked out") ||
+        errMsg.includes("เช็คเอาท์") ||
+        errMsg.includes("เช็กเอ้า")
+      ) {
+        setError(t('enterCode.checkedOut') ?? 'เช็กเอ้าแล้ว');
+        navigateTo(Screen.EnterCode);
+        return;
+      }
+
+      const rawMsg = errCode || errMsg;
       const translated = rawMsg ? t(String(rawMsg)) : '';
       setError(translated && translated !== rawMsg ? translated : (t("enterCode.errorMessage") ?? "Invalid token"));
     } finally {

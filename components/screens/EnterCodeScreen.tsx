@@ -199,7 +199,7 @@ const EnterCodeScreen: React.FC<EnterCodeScreenProps> = ({ onSubmit, onBack, err
             </div>
           </div>
 
-          {(externalError && isValid === false) && (
+          {externalError && isValid !== true && (
             <div className={`${styles.messageBase} ${styles.errorMessage}`}>
               <AlertCircleIcon className={styles.icon} />
               <span>{externalError}</span>

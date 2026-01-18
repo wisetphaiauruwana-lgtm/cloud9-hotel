@@ -128,7 +128,11 @@ export const getBookingByToken = async (token: string): Promise<any> => {
       throw err;
     }
 
-    throw new Error(normalizeApiError(data, `Verify token failed (${res.status})`));
+    const err: any = new Error(normalizeApiError(data, `Verify token failed (${res.status})`));
+    if (code) err.code = code;
+    err.status = res.status;
+    err.data = data;
+    throw err;
   }
 
   // -----------------------------
