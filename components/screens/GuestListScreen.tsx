@@ -427,6 +427,16 @@ const toBase64Payload = (value?: string) => {
 const unwrapBooking = (resp: any) =>
   resp?.data?.booking ?? resp?.data ?? resp?.booking ?? resp?.payload ?? resp;
 
+const stripGuestSensitiveData = (list: Guest[]) =>
+  (list || []).map((g, idx) => ({
+    ...g,
+    details: {},
+    faceImage: "",
+    documentImage: "",
+    progress: 0,
+    name: String(g.name ?? "").trim() ? g.name : `Guest ${idx + 1}`,
+  }));
+
 const getBookingIdFromQuery = () => {
   try {
     const qs = new URLSearchParams(window.location.search);
@@ -778,6 +788,17 @@ const GuestListScreen: React.FC<GuestListScreenProps> = ({
     if (nextStr && nextStr !== tokenUsed) setTokenUsed(nextStr);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [propToken, location.state]);
+
+  useEffect(() => {
+    if (isBookingInfoCompleted) return;
+    if (guests.length > 0) {
+      setGuests(stripGuestSensitiveData(guests));
+      return;
+    }
+    if (initialGuests.length > 0) {
+      setGuests(stripGuestSensitiveData(initialGuests));
+    }
+  }, [isBookingInfoCompleted]);
 
   useEffect(() => {
     let mounted = true;
