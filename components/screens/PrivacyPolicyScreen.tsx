@@ -26,7 +26,7 @@ const PrivacyPolicyScreen: React.FC<PrivacyPolicyScreenProps> = ({ onBack }) => 
 
   return (
     <div className={styles.container}>
-      <Header onBack={onBack}/>
+      <Header onBack={onBack} showLogo={false} />
       <main className={styles.main}>
         <div className={styles.logoContainer}>
             <CloudIcon className={styles.logoIcon} />
