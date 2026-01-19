@@ -15,7 +15,7 @@ const styles = {
   main: "flex-grow flex flex-col items-center justify-center px-6 py-8 text-center",
   content: "space-y-4 max-w-[360px] md:max-w-[600px] lg:max-w-[720px]",
   brand: "flex flex-col items-center gap-2",
-  brandText: "text-base font-bold tracking-widest text-gray-900",
+  brandText: "text-3xl md:text-4xl font-bold tracking-widest text-gray-900",
   title: "text-xs font-bold tracking-[0.22em] text-gray-900",
   subtitle: "text-gray-500 text-xs leading-relaxed",
   buttonContainer: "px-6 pb-6 w-full flex justify-center",
@@ -30,7 +30,7 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart }) => {
       <main className={styles.main}>
         <div className={styles.content}>
           <div className={styles.brand}>
-            <CloudIcon className="w-8 h-8 text-gray-900" />
+            <CloudIcon className="w-24 h-24 md:w-28 md:h-28" />
             <div className={styles.brandText}>cloud9</div>
           </div>
           <h1 className={styles.title}>{t('welcome.title') || "READY TO BEGIN YOUR CHECK-IN?"}</h1>

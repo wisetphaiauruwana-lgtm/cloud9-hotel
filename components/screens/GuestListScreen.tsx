@@ -379,7 +379,7 @@ const guestListScreenStyles = {
   footer: "p-6 md:p-8 lg:p-10 text-center space-y-4",
   footerText: "text-sm md:text-base lg:text-lg text-gray-500",
   poweredByContainer: "pt-4 flex items-center justify-center space-x-1 text-gray-400 text-sm md:text-base lg:text-lg",
-  poweredByIcon: "w-5 h-5 lg:w-6 lg:h-6 text-black",
+  poweredByIcon: "w-8 h-8 text-black",
 };
 
 /* ---------------- types / helpers ---------------- */
@@ -1192,7 +1192,7 @@ const handleConfirmDeleteSelected = async () => {
         <div className={guestListScreenStyles.poweredByContainer}>
           <span>{t('footer.poweredBy')}</span>
           <CloudIcon className={guestListScreenStyles.poweredByIcon} />
-          <span className="font-semibold text-gray-900">cloud9</span>
+          <span className="text-base font-semibold text-gray-900">cloud9</span>
         </div>
       </div>
 
@@ -1243,7 +1243,7 @@ const handleConfirmDeleteSelected = async () => {
           </div>
 
           <div className="pb-4 text-center text-xs text-gray-400">
-            {t('footer.poweredBy')} <span className="font-semibold text-gray-900">cloud9</span>
+            {t('footer.poweredBy')} <span className="text-base font-semibold text-gray-900">cloud9</span>
           </div>
         </div>
       )}

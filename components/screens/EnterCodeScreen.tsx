@@ -23,7 +23,7 @@ const styles = {
   form: "w-full max-w-[360px] md:max-w-[600px] lg:max-w-[720px] space-y-6",
   inputContainer: "space-y-2 text-left",
   brand: "flex flex-col items-center gap-2",
-  brandText: "text-base font-bold tracking-widest text-gray-900",
+  brandText: "text-3xl md:text-4xl font-bold tracking-widest text-gray-900",
   title: "text-xs font-bold tracking-[0.22em] text-gray-900 text-center",
   input: "w-full px-3 py-2 border border-gray-300 bg-white rounded-md text-left text-sm focus:ring-2 focus:ring-gray-400 focus:border-gray-400 transition-colors text-gray-900 placeholder:text-gray-400 shadow-sm",
   messageBase: "flex items-center gap-2 text-xs",
@@ -176,7 +176,7 @@ const EnterCodeScreen: React.FC<EnterCodeScreenProps> = ({ onSubmit, onBack, err
         <form onSubmit={handleSubmit} className={styles.form}>
           <div className={styles.inputContainer}>
             <div className={styles.brand}>
-              <CloudIcon className="w-8 h-8 text-gray-900" />
+              <CloudIcon className="w-24 h-24 md:w-28 md:h-28" />
               <div className={styles.brandText}>cloud9</div>
             </div>
             <h1 className={styles.title}>{t('enterCode.title') || "ENTER YOUR CONFIRMATION CODE"}</h1>

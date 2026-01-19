@@ -19,7 +19,7 @@ const styles = {
   headerBorder: "border-b border-gray-100",
   backButton: "absolute left-4 md:left-6 lg:left-8 text-gray-500 hover:text-black transition-colors",
   logoContainer: "flex items-center space-x-2 text-black",
-  logoText: "font-bold text-2xl md:text-3xl",
+  logoText: "font-bold text-3xl md:text-4xl",
   langSwitcher: "absolute right-4 md:right-6 lg:right-8",
   langButton: "flex items-center space-x-1 text-gray-600 font-semibold hover:text-black transition-colors",
   langDropdown: "absolute right-0 mt-2 w-32 bg-white rounded-lg shadow-xl border border-gray-100 z-20",
@@ -70,7 +70,7 @@ const Header: React.FC<HeaderProps> = ({
       )}
       {showLogo && (
         <div className={styles.logoContainer}>
-          <CloudIcon className="w-7 h-7 md:w-8 md:h-8 lg:w-9 lg:h-9" />
+          <CloudIcon className="w-10 h-10 md:w-12 md:h-12" />
           <span className={styles.logoText}>cloud9</span>
         </div>
       )}

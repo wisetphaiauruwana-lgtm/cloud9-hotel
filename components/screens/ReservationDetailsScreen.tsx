@@ -48,7 +48,7 @@ const styles = {
   detailsCard: 'bg-white p-0 max-w-[360px] md:max-w-[600px] lg:max-w-[720px] mx-auto w-full',
   divider: 'space-y-1',
   brand: 'flex flex-col items-center gap-1 pt-1',
-  brandText: 'text-sm font-bold tracking-widest text-gray-900',
+  brandText: 'text-3xl md:text-4xl font-bold tracking-widest text-gray-900',
   titleRow: 'flex items-center justify-between max-w-[360px] md:max-w-[600px] lg:max-w-[720px] mx-auto w-full',
   titleIcons: 'flex items-center gap-3 text-gray-500',
   iconButton:
@@ -595,7 +595,7 @@ const ReservationDetailsScreen: React.FC<ReservationDetailsScreenProps> = ({
       <Header onBack={onBack} compact showLogo={false} showBorder={false} />
       <main className={styles.main}>
         <div className={styles.brand}>
-          <CloudIcon className="w-8 h-8 text-gray-900" />
+          <CloudIcon className="w-24 h-24 md:w-28 md:h-28" />
           <div className={styles.brandText}>cloud9</div>
         </div>
         <div className={styles.titleRow}>
