@@ -34,13 +34,10 @@
     "codeLabel": "Confirmation Code",
     "placeholder": "e.g., C12905721885",
     "invalidFormat": "Please enter an 8-character code.",
-    "successMessage": "Code is valid! Loading reservation...",
-    "invalidOrExpired": "Invalid or expired code.",
-    "networkError": "Cannot connect to server. Please try again.",
-    "errorMessage": "Invalid or expired link.",
-    "checkedOut": "Checked out",
-    "errorMessageX": "Checked out"
-  }
+  "successMessage": "Code is valid! Loading reservation...",
+  "invalidOrExpired": "Invalid or expired code.",
+  "networkError": "Cannot connect to server. Please try again."
+}
 ,
 "reservationDetails": {
   "title": "Reservation Details",
@@ -106,7 +103,6 @@
     "newGuest": "New Guest",
     "edit": "Edit",
     "progress": "{progress}%",
-    "noGuests": "No guests found.",
     "takePhoto": "Take Your Photo",
     "captureDocument": "Capture Verification Document",
     "verifiedImage": "Verified Image",
@@ -170,7 +166,6 @@
   "postCheckin": {
     "title": "RESERVATION DETAILS",
     "status": "Checked In",
-    "qrTitle": "Reservation Details QR Code",
     "qrCodeLabel": "Reservation Details QR Code",
     "mainGuest": "Main Guest:",
     "email": "Email:",
