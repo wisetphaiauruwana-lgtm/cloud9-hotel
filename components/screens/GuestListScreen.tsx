@@ -118,8 +118,10 @@ const GuestListItem: React.FC<GuestListItemProps> = ({
     return `data:image/jpeg;base64,${v}`;
   };
 
-  const faceSrc = toImageSrc(guest.faceImage);
-  const documentSrc = toImageSrc(guest.documentImage);
+  const hasFaceImage = showImages && !!guest.faceImage;
+  const hasDocumentImage = showImages && !!guest.documentImage;
+  const faceSrc = hasFaceImage ? toImageSrc(guest.faceImage) : undefined;
+  const documentSrc = hasDocumentImage ? toImageSrc(guest.documentImage) : undefined;
 
   useEffect(() => { setDetails(guest.details); }, [guest.details]);
 
@@ -285,7 +287,7 @@ const GuestListItem: React.FC<GuestListItemProps> = ({
                 {renderDetailsFields()}
               </div>
             </div>
-          ) : !guest.faceImage ? (
+          ) : !hasFaceImage ? (
             <div className={guestListItemStyles.actionsContainer}>
               <div className={guestListItemStyles.actionRow}>
                 <span className={guestListItemStyles.actionLabel}>{t('guestList.takePhoto')}</span>
@@ -303,7 +305,7 @@ const GuestListItem: React.FC<GuestListItemProps> = ({
                 </button>
               </div>
             </div>
-          ) : !guest.documentImage ? (
+          ) : !hasDocumentImage ? (
             <div className={guestListItemStyles.actionsContainer}>
               <div>
                 <p className={`${guestListItemStyles.imageLabel} mb-2`}>{t('guestList.verifiedImage')}</p>
