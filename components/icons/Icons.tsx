@@ -1,36 +1,11 @@
 import React from 'react';
 
 export const CloudIcon = ({ className = 'w-6 h-6' }: { className?: string }) => (
-  <svg
-    className={className}
-    viewBox="0 0 128 96"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <path
-      d="M24 68c-8.8 0-16-7.2-16-16s7.2-16 16-16h4.2C31.5 26 42.7 18 56 18c9.9 0 19 4.6 24.6 12.2 1.6-.4 3.3-.6 5-.6 11 0 20 9 20 20 0 11-9 20-20 20H24z"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="8"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-    <circle
-      cx="76"
-      cy="32"
-      r="20"
-      fill="white"
-      stroke="currentColor"
-      strokeWidth="8"
-    />
-    <path
-      d="M58 62c8 0 14-6 14-14"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="8"
-      strokeLinecap="round"
-    />
-  </svg>
+  <img
+    src="/cloud9-logo.png"
+    alt="cloud9 logo"
+    className={`${className} object-contain`}
+  />
 );
 
 export const ArrowLeftIcon = ({ className = 'w-6 h-6' }: { className?: string }) => (
