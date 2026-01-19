@@ -65,8 +65,7 @@ const styles = {
   confirmButton: 'rounded-md py-3 text-xs tracking-[0.2em]',
   confirmWrap: 'max-w-[360px] md:max-w-[600px] lg:max-w-[720px] mx-auto w-full',
   statusWrap: 'max-w-[360px] md:max-w-[600px] lg:max-w-[720px] mx-auto w-full',
-  consentBox:
-    'max-w-[360px] md:max-w-[600px] lg:max-w-[720px] mx-auto w-full rounded-lg border border-gray-200 bg-slate-50 p-3 text-xs text-gray-700',
+  consentBox: 'max-w-[360px] md:max-w-[600px] lg:max-w-[720px] mx-auto w-full p-3 text-xs text-gray-700',
   consentRow: 'mt-3 flex items-start gap-2 text-[11px] text-gray-800',
   consentLink: 'text-gray-900 underline underline-offset-2',
 };
