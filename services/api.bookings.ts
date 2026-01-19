@@ -97,7 +97,10 @@ export const getBookingInfoByToken = async (token: string): Promise<any> => {
  * - จัดการ error code: missingToken / invalidOrExpiredToken / missingBookingIdX
  * - ทำ normalization ให้ payload
  */
-export const getBookingByToken = async (token: string): Promise<any> => {
+export const getBookingByToken = async (
+  token: string,
+  bookingRoomId?: number | string | null
+): Promise<any> => {
   if (!token) {
     const err: any = new Error("Token is required");
     err.code = "error.missingToken";
@@ -105,7 +108,23 @@ export const getBookingByToken = async (token: string): Promise<any> => {
   }
 
   const checkinBase = ENDPOINTS.CHECKIN_INITIATE.replace(/\/initiate\/?$/i, "");
-  const verifyUrl = `${checkinBase}/verify?token=${encodeURIComponent(token)}`;
+  let bookingRoomIdValue = bookingRoomId;
+  if (bookingRoomIdValue === undefined || bookingRoomIdValue === null || bookingRoomIdValue === "") {
+    try {
+      const stored = localStorage.getItem("checkin_booking_room_id");
+      if (stored && /^\d+$/.test(String(stored))) {
+        bookingRoomIdValue = Number(stored);
+      }
+    } catch {
+      // ignore
+    }
+  }
+
+  const params = new URLSearchParams({ token: String(token) });
+  if (bookingRoomIdValue !== undefined && bookingRoomIdValue !== null && String(bookingRoomIdValue).trim() !== "") {
+    params.set("bookingRoomId", String(bookingRoomIdValue));
+  }
+  const verifyUrl = `${checkinBase}/verify?${params.toString()}`;
 
   const res = await fetch(verifyUrl, {
     method: "GET",
@@ -144,6 +163,7 @@ export const getBookingByToken = async (token: string): Promise<any> => {
 
   const normalized = {
     ...payload,
+    bookingRoomId: payload?.bookingRoomId ?? payload?.booking_room_id,
 
     // ⭐ สำคัญ: App.tsx ใช้ booking.guests.adults/children
     guests: {

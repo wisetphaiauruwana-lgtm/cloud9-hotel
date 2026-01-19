@@ -249,6 +249,23 @@ const initiateWithGuard = async (bookingId: number) => {
   try {
     const init = await apiService.initiateCheckIn(bookingId);
     try {
+      const roomId =
+        init?.bookingRoomId ??
+        init?.booking_room_id ??
+        init?.data?.bookingRoomId ??
+        init?.data?.booking_room_id ??
+        init?.items?.[0]?.bookingRoomId ??
+        init?.items?.[0]?.booking_room_id ??
+        init?.data?.items?.[0]?.bookingRoomId ??
+        init?.data?.items?.[0]?.booking_room_id ??
+        null;
+      if (roomId && /^\d+$/.test(String(roomId))) {
+        localStorage.setItem("checkin_booking_room_id", String(roomId));
+      }
+    } catch {
+      // ignore
+    }
+    try {
       const payload = { ...init, __ts: Date.now() };
       localStorage.setItem(keyCache, JSON.stringify(payload));
     } catch (e) {

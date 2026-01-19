@@ -103,6 +103,7 @@ export const fetchGuests = async (
 /* -------------------------------------------------------------------------- */
 export const createGuest = async (payload: {
   bookingId?: number | string;
+  bookingRoomId?: number | string;
   bookingToken?: string;
   booking_token?: string;
   firstName?: string;
@@ -127,6 +128,13 @@ export const createGuest = async (payload: {
       body.bookingId = Number(s);
     } else if (s) {
       body.booking_token = s;
+    }
+  }
+  if (payload.bookingRoomId !== undefined && payload.bookingRoomId !== null) {
+    const s = String(payload.bookingRoomId).trim();
+    if (/^\d+$/.test(s)) {
+      body.bookingRoomId = Number(s);
+      body.booking_room_id = Number(s);
     }
   }
 

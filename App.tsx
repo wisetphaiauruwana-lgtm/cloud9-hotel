@@ -37,6 +37,19 @@ const extractBookingId = (b: any): number | undefined => {
   return Number.isNaN(n) ? undefined : n;
 };
 
+const extractBookingRoomId = (b: any): number | undefined => {
+  const v =
+    b?.bookingRoomId ??
+    b?.booking_room_id ??
+    b?.roomBookingId ??
+    b?.data?.bookingRoomId ??
+    b?.data?.booking_room_id;
+
+  if (v === undefined || v === null) return undefined;
+  const n = Number(v);
+  return Number.isNaN(n) ? undefined : n;
+};
+
 const HIDE_RESERVATION_PAGE = (import.meta.env.VITE_HIDE_RESERVATION_PAGE as string) === 'true';
 const HIDE_REVIEW_PAGE = (import.meta.env.VITE_HIDE_REVIEW_PAGE as string) === 'true';
 
@@ -224,6 +237,16 @@ const App: React.FC = () => {
   const [allowReservationFromToken, setAllowReservationFromToken] = useState(false);
   const [guestListBookingId, setGuestListBookingId] = useState<number | null>(null);
   const CHECKIN_BOOKING_ID_KEY = "checkin_booking_id";
+  const CHECKIN_BOOKING_ROOM_ID_KEY = "checkin_booking_room_id";
+  const [checkinBookingRoomId, setCheckinBookingRoomId] = useState<number | null>(() => {
+    try {
+      const stored = localStorage.getItem(CHECKIN_BOOKING_ROOM_ID_KEY);
+      if (stored && /^\d+$/.test(String(stored))) return Number(stored);
+    } catch {
+      // ignore storage errors
+    }
+    return null;
+  });
 
   const { t } = useTranslation();
 
@@ -295,6 +318,14 @@ const App: React.FC = () => {
           null;
 
         if (realToken) setCheckinToken(String(realToken));
+        try {
+          const storedRoomId = localStorage.getItem(CHECKIN_BOOKING_ROOM_ID_KEY);
+          if (storedRoomId && /^\d+$/.test(String(storedRoomId))) {
+            setCheckinBookingRoomId(Number(storedRoomId));
+          }
+        } catch {
+          // ignore
+        }
 
         setBooking(safeBooking);
         setIsGuestListReadOnly(true);
@@ -338,7 +369,17 @@ const App: React.FC = () => {
       setAllowReservationFromToken(true);
       localStorage.setItem("checkin_token", token);
 
-      const bkResp: any = await apiService.getBookingByToken(token);
+      let storedRoomId: number | null = checkinBookingRoomId;
+      try {
+        const rawRoomId = localStorage.getItem(CHECKIN_BOOKING_ROOM_ID_KEY);
+        if (rawRoomId && /^\d+$/.test(String(rawRoomId))) {
+          storedRoomId = Number(rawRoomId);
+        }
+      } catch {
+        // ignore
+      }
+
+      const bkResp: any = await apiService.getBookingByToken(token, storedRoomId);
       const bk: any =
         bkResp?.data?.booking ??
         bkResp?.data ??
@@ -351,6 +392,12 @@ const App: React.FC = () => {
       if (bookingIdFromToken) {
         setGuestListBookingId(bookingIdFromToken);
         try { localStorage.setItem(CHECKIN_BOOKING_ID_KEY, String(bookingIdFromToken)); } catch { }
+      }
+
+      const bookingRoomIdFromToken = extractBookingRoomId(bkResp) ?? extractBookingRoomId(bk);
+      if (bookingRoomIdFromToken) {
+        setCheckinBookingRoomId(bookingRoomIdFromToken);
+        try { localStorage.setItem(CHECKIN_BOOKING_ROOM_ID_KEY, String(bookingRoomIdFromToken)); } catch { }
       }
 
       if (isCheckedOutBooking(bk)) {
@@ -503,7 +550,14 @@ const App: React.FC = () => {
       const q = new URLSearchParams(window.location.search);
       const tokenFromUrl = q.get('token');
       const bookingIdFromUrl = q.get('bookingId');
+      const bookingRoomIdFromUrl = q.get('bookingRoomId') ?? q.get('booking_room_id');
       if (!tokenFromUrl && !bookingIdFromUrl) return;
+
+      if (bookingRoomIdFromUrl && /^\d+$/.test(String(bookingRoomIdFromUrl))) {
+        const roomIdNum = Number(bookingRoomIdFromUrl);
+        setCheckinBookingRoomId(roomIdNum);
+        try { localStorage.setItem(CHECKIN_BOOKING_ROOM_ID_KEY, String(roomIdNum)); } catch { }
+      }
 
       if (tokenFromUrl) {
         setAllowReservationFromToken(true);
@@ -552,6 +606,8 @@ const App: React.FC = () => {
 
       q.delete('token');
       q.delete('bookingId');
+      q.delete('bookingRoomId');
+      q.delete('booking_room_id');
       const newSearch = q.toString();
       const newUrl = window.location.pathname + (newSearch ? `?${newSearch}` : '') + window.location.hash;
       window.history.replaceState({}, document.title, newUrl);
@@ -1067,6 +1123,7 @@ const App: React.FC = () => {
             guests={guests}
             token={checkinToken}
             bookingId={guestListBookingId ?? booking?.dbId ?? booking?.id ?? (booking as any)?.bookingId}
+            bookingRoomId={checkinBookingRoomId}
             onConfirm={handleCheckinConfirm}
             onBack={() =>
               navigateTo(isGuestListReadOnly ? Screen.PostCheckinDetails : Screen.ReservationDetails)

@@ -17,6 +17,7 @@ import {
 
 const CONSENT_ID = 1;
 const CHECKIN_BOOKING_ID_KEY = "checkin_booking_id";
+const CHECKIN_BOOKING_ROOM_ID_KEY = "checkin_booking_room_id";
 
 /* ---------------- UI components (same style) ---------------- */
 const editableFieldStyles = {
@@ -387,6 +388,7 @@ interface GuestListScreenProps {
   guests?: Guest[];
   token?: string | null;
   bookingId?: number | string;
+  bookingRoomId?: number | string;
 
   onConfirm: (booking?: Booking) => void;
   onBack: () => void;
@@ -444,6 +446,23 @@ const getTokenFromQuery = () => {
     return qs.get('token');
   } catch {
     return null;
+  }
+};
+
+const getBookingRoomIdFromQuery = () => {
+  try {
+    const qs = new URLSearchParams(window.location.search);
+    return qs.get('bookingRoomId') ?? qs.get('booking_room_id');
+  } catch {
+    return null;
+  }
+};
+
+const readBookingRoomIdFromStorage = () => {
+  try {
+    return toNumberOrUndef(localStorage.getItem(CHECKIN_BOOKING_ROOM_ID_KEY));
+  } catch {
+    return undefined;
   }
 };
 
@@ -574,6 +593,7 @@ const GuestListScreen: React.FC<GuestListScreenProps> = ({
   guests: initialGuests = [],
   token: propToken = null,
   bookingId,
+  bookingRoomId,
   onConfirm,
   onBack,
   onTakePhoto,
@@ -629,6 +649,16 @@ const GuestListScreen: React.FC<GuestListScreenProps> = ({
   const [tokenUsed, setTokenUsed] = useState<string | null>(initialToken ? String(initialToken) : null);
   const [resolvedBookingId, setResolvedBookingId] = useState<number | undefined>(undefined);
   const effectiveBookingId = toNumberOrUndef(resolvedBookingId ?? finalBookingId);
+  const bookingRoomIdUsed = useMemo(() => {
+    const fromState = (location.state as any)?.bookingRoomId;
+    const fromQuery = toNumberOrUndef(getBookingRoomIdFromQuery());
+    return (
+      toNumberOrUndef(bookingRoomId) ??
+      toNumberOrUndef(fromState) ??
+      fromQuery ??
+      readBookingRoomIdFromStorage()
+    );
+  }, [bookingRoomId, location.state]);
 
   // ✅ FIX: bookingId เปลี่ยน -> reset state กันของเก่าค้าง
   useEffect(() => {
@@ -658,6 +688,15 @@ const GuestListScreen: React.FC<GuestListScreenProps> = ({
       // ignore
     }
   }, [effectiveBookingId]);
+
+  useEffect(() => {
+    if (!bookingRoomIdUsed) return;
+    try {
+      localStorage.setItem(CHECKIN_BOOKING_ROOM_ID_KEY, String(bookingRoomIdUsed));
+    } catch {
+      // ignore storage errors
+    }
+  }, [bookingRoomIdUsed]);
 
   useEffect(() => {
     let mounted = true;
@@ -717,7 +756,7 @@ const GuestListScreen: React.FC<GuestListScreenProps> = ({
       if (!token) return;
 
       try {
-        const bookingResp: any = await apiService.getBookingByToken(token); // ดึงข้อมูลจาก API ด้วย token
+        const bookingResp: any = await apiService.getBookingByToken(token, bookingRoomIdUsed); // ดึงข้อมูลจาก API ด้วย token
         const bid2 =
           bookingResp?.bookingId ??
           bookingResp?.booking_id ??
@@ -863,7 +902,7 @@ const handleUpdateGuestDetails = (guestId: string, details: Guest["details"]) =>
         }
 
         if (token) {
-          const bookingResp: any = await (apiService as any).getBookingByToken(token);
+          const bookingResp: any = await (apiService as any).getBookingByToken(token, bookingRoomIdUsed);
           const bid2 =
             bookingResp?.bookingId ??
             bookingResp?.booking_id ??
@@ -901,7 +940,7 @@ const handleUpdateGuestDetails = (guestId: string, details: Guest["details"]) =>
 
     run();
     return () => { mounted = false; };
-  }, [effectiveBookingId, tokenUsed, isReadOnly]);
+  }, [effectiveBookingId, tokenUsed, isReadOnly, bookingRoomIdUsed]);
 
   const handleRetry = () => {
     fetchedRef.current = false;
@@ -968,6 +1007,7 @@ const handleUpdateGuestDetails = (guestId: string, details: Guest["details"]) =>
 
         const payload = {
           bookingId: bookingIdNum,
+          bookingRoomId: bookingRoomIdUsed ?? undefined,
           fullName: g.name,
           isMainGuest: !!g.isMainGuest,
           dateOfBirth: normalizeDate(g.details?.dateOfBirth),
@@ -1015,7 +1055,7 @@ const handleUpdateGuestDetails = (guestId: string, details: Guest["details"]) =>
       }
 
       // 8️⃣ ดึงข้อมูล booking ที่สมบูรณ์จาก API
-      const fullBooking: Booking = await (apiService as any).getBookingByToken(tokenUsed);
+      const fullBooking: Booking = await (apiService as any).getBookingByToken(tokenUsed, bookingRoomIdUsed);
 
       setSaveSuccess('บันทึกสำเร็จ'); // แสดงข้อความสำเร็จ
       onConfirm(fullBooking); // เรียกฟังก์ชัน onConfirm ที่ได้รับจาก props

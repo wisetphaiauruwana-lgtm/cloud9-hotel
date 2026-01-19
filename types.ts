@@ -154,6 +154,7 @@ export interface Guest {
   details?: ExtractedData;
 
   bookingId?: number | string;
+  bookingRoomId?: number | string;
   
 }
 
@@ -183,6 +184,7 @@ export interface Consent {
 export interface BookingInfo {
   id?: number;
   bookingId?: number;
+  bookingRoomId?: number;
   token?: string;
   checkinCode?: string;
   status?: string;

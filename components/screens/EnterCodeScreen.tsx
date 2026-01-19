@@ -62,6 +62,19 @@ const extractBookingIdFromVerify = (resp: any): number | undefined => {
   return Number.isNaN(n) ? undefined : n;
 };
 
+const extractBookingRoomIdFromVerify = (resp: any): number | undefined => {
+  const v =
+    resp?.bookingRoomId ??
+    resp?.booking_room_id ??
+    resp?.data?.bookingRoomId ??
+    resp?.data?.booking_room_id ??
+    resp?.booking?.bookingRoomId ??
+    resp?.booking?.booking_room_id;
+  if (v === undefined || v === null) return undefined;
+  const n = Number(v);
+  return Number.isNaN(n) ? undefined : n;
+};
+
 const EnterCodeScreen: React.FC<EnterCodeScreenProps> = ({ onSubmit, onBack, error: externalError = null }) => {
   const [code, setCode] = useState("");
   // no queryText input — we only use the code; apiService will default query to code if needed
@@ -111,6 +124,10 @@ const EnterCodeScreen: React.FC<EnterCodeScreenProps> = ({ onSubmit, onBack, err
       const bookingId = extractBookingIdFromVerify(resp);
       if (bookingId) {
         try { localStorage.setItem(CHECKIN_BOOKING_ID_KEY, String(bookingId)); } catch { }
+      }
+      const bookingRoomId = extractBookingRoomIdFromVerify(resp);
+      if (bookingRoomId) {
+        try { localStorage.setItem("checkin_booking_room_id", String(bookingRoomId)); } catch { }
       }
 
       if (booking && (booking.checkedOutAt || booking.status === "Checked-Out")) {
