@@ -1094,7 +1094,11 @@ const handleConfirmDeleteSelected = async () => {
 
   return (
     <div className={guestListScreenStyles.container}>
-      <Header onBack={onBack} />
+      <Header
+        onBack={onBack}
+        logoClassName="w-14 h-14 md:w-16 md:h-16"
+        logoTextClassName="font-bold text-3xl md:text-4xl tracking-widest"
+      />
 
       <main className={guestListScreenStyles.main}>
         <div className={guestListScreenStyles.header}>

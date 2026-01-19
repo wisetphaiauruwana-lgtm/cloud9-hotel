@@ -11,6 +11,8 @@ interface HeaderProps {
   compact?: boolean;
   showLogo?: boolean;
   showBorder?: boolean;
+  logoClassName?: string;
+  logoTextClassName?: string;
 }
 
 const styles = {
@@ -31,6 +33,8 @@ const Header: React.FC<HeaderProps> = ({
   compact = false,
   showLogo = true,
   showBorder = true,
+  logoClassName,
+  logoTextClassName,
 }) => {
   const { language, setLanguage } = useLanguage();
   const { t } = useTranslation();
@@ -70,8 +74,8 @@ const Header: React.FC<HeaderProps> = ({
       )}
       {showLogo && (
         <div className={styles.logoContainer}>
-          <CloudIcon className="w-10 h-10 md:w-12 md:h-12" />
-          <span className={styles.logoText}>cloud9</span>
+          <CloudIcon className={logoClassName || "w-10 h-10 md:w-12 md:h-12"} />
+          <span className={logoTextClassName || styles.logoText}>cloud9</span>
         </div>
       )}
 
