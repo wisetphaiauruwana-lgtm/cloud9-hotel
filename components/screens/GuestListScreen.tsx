@@ -987,17 +987,11 @@ const handleUpdateGuestDetails = (guestId: string, details: Guest["details"]) =>
         if (!bid && !token) return;
 
         if (!isBookingInfoCompleted) {
-          const incomingForRoom = bookingRoomIdUsed
-            ? initialGuests.filter((g) => {
-                const v = toNumberOrUndef((g as any).bookingRoomId ?? (g as any).booking_room_id);
-                return v === bookingRoomIdUsed;
-              })
-            : initialGuests;
-          const hasIncomingImages = incomingForRoom.some(
+          const hasIncomingImages = initialGuests.some(
             (g) => !!g.faceImage || !!g.documentImage
           );
           if (hasIncomingImages) {
-            setGuests(normalizeGuestsForDisplay(incomingForRoom));
+            setGuests(normalizeGuestsForDisplay(initialGuests));
             setSeededForPending(true);
             return;
           }
