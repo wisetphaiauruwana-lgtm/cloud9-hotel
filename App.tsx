@@ -199,6 +199,13 @@ const App: React.FC = () => {
     try {
       const stored = localStorage.getItem(SCREEN_STORAGE_KEY) as Screen | null;
       if (stored && Object.values(Screen).includes(stored)) {
+        if (
+          stored === Screen.GuestList ||
+          stored === Screen.ReservationDetails ||
+          stored === Screen.PrivacyPolicy
+        ) {
+          return Screen.ReservationDetails;
+        }
         return stored;
       }
     } catch {
