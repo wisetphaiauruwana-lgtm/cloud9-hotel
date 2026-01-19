@@ -93,13 +93,6 @@ const mapBackendGuestToUi = (g: any, idx: number): Guest => {
       docTypeRaw.includes('ID') ? DocumentType.IDCard :
         (g.documentType ?? DocumentType.IDCard);
 
-  const bookingRoomId =
-    g.bookingRoomId ??
-    g.booking_room_id ??
-    g.bookingRoomID ??
-    g.bookingRoom ??
-    undefined;
-
   return {
     id,
     name,
@@ -117,18 +110,11 @@ const mapBackendGuestToUi = (g: any, idx: number): Guest => {
     },
     faceImage,
     documentImage,
-    bookingRoomId,
     progress:
       typeof g.progress === 'number'
         ? g.progress
         : (faceImage && documentImage ? 100 : (faceImage ? 50 : 0)),
   } as Guest;
-};
-
-const withBookingRoomId = (guest: Guest, bookingRoomId?: number) => {
-  if (!bookingRoomId) return guest;
-  if (guest.bookingRoomId) return guest;
-  return { ...guest, bookingRoomId };
 };
 
 // ✅ เลือก record "ดีที่สุด" ต่อ 1 คน (กันซ้ำ/กัน record เก่ามาทับ)
