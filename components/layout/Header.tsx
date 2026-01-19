@@ -74,7 +74,7 @@ const Header: React.FC<HeaderProps> = ({
       )}
       {showLogo && (
         <div className={styles.logoContainer}>
-          <CloudIcon className={logoClassName || "w-24 h-24 md:w-16 md:h-16"} />
+          <CloudIcon className={logoClassName || "w-30 h-30 md:w-50 md:h-50"} />
           <span className={logoTextClassName || "font-bold text-3xl md:text-4xl tracking-widest"}>cloud9</span>
         </div>
       )}
