@@ -986,7 +986,7 @@ const handleUpdateGuestDetails = (guestId: string, details: Guest["details"]) =>
 
         if (!bid && !token) return;
 
-        if (!isBookingInfoCompleted) {
+        if (!isBookingInfoCompleted && !isReadOnly) {
           const hasIncomingImages = initialGuests.some(
             (g) => !!g.faceImage || !!g.documentImage
           );
