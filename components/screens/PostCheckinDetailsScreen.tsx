@@ -91,7 +91,12 @@ const pickMainGuestFromBooking = (b: any): string => {
 
 /* ----------------- Local guest cache + merge (prefer cache) ----------------- */
 const GUEST_CACHE_TTL_MS = 24 * 60 * 60 * 1000;
-const guestCacheKey = (bookingId: number) => `guest_cache_${bookingId}`;
+const guestCacheKey = (bookingId: number, bookingRoomId?: number | string | null) => {
+  if (bookingRoomId !== undefined && bookingRoomId !== null && String(bookingRoomId).trim() !== "") {
+    return `guest_cache_${bookingId}_${bookingRoomId}`;
+  }
+  return `guest_cache_${bookingId}`;
+};
 const CHECKIN_BOOKING_ID_KEY = "checkin_booking_id";
 const CHECKIN_BOOKING_ROOM_ID_KEY = "checkin_booking_room_id";
 const getBookingIdFromQuery = () => {
@@ -112,9 +117,9 @@ const getBookingRoomIdFromQuery = () => {
   }
 };
 
-const loadGuestCache = (bookingId: number): any[] => {
+const loadGuestCache = (bookingId: number, bookingRoomId?: number | string | null): any[] => {
   try {
-    const raw = localStorage.getItem(guestCacheKey(bookingId));
+    const raw = localStorage.getItem(guestCacheKey(bookingId, bookingRoomId));
     if (!raw) return [];
     const parsed = JSON.parse(raw);
     const ts = Number(parsed?.__ts ?? 0);
@@ -361,7 +366,7 @@ const PostCheckinDetailsScreen: React.FC<PostCheckinDetailsScreenProps> = ({
       setGuestList(Array.isArray(backendList) ? backendList : []);
     } catch {
       // หากเกิดข้อผิดพลาด, ใช้ข้อมูลจาก cache
-      const cacheOnly = loadGuestCache(bid);
+      const cacheOnly = loadGuestCache(bid, resolvedBookingRoomId);
       if (mounted) setGuestList(Array.isArray(cacheOnly) ? cacheOnly : []);
     } finally {
       if (mounted) setGuestLoading(false);
@@ -384,7 +389,7 @@ const PostCheckinDetailsScreen: React.FC<PostCheckinDetailsScreenProps> = ({
 
   const mainGuestFromCache = useMemo(() => {
     if (!resolvedBookingId) return '';
-    const cached = loadGuestCache(resolvedBookingId);
+    const cached = loadGuestCache(resolvedBookingId, resolvedBookingRoomId);
     return getMainGuestNameFromList(cached);
   }, [resolvedBookingId]);
 

@@ -2,12 +2,17 @@
 import { Guest } from "../types";
 
 const GUEST_CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 ชม.
-const guestCacheKey = (bookingId: number) => `guest_cache_${bookingId}`;
+const guestCacheKey = (bookingId: number, bookingRoomId?: number | string | null) => {
+  if (bookingRoomId !== undefined && bookingRoomId !== null && String(bookingRoomId).trim() !== "") {
+    return `guest_cache_${bookingId}_${bookingRoomId}`;
+  }
+  return `guest_cache_${bookingId}`;
+};
 
 /* -------------------------------------------------------------------------- */
 /*                                   CACHE                                    */
 /* -------------------------------------------------------------------------- */
-export const saveGuestCache = (bookingId: number, guests: Guest[]) => {
+export const saveGuestCache = (bookingId: number, guests: Guest[], bookingRoomId?: number | string | null) => {
   try {
     const payload = {
       __ts: Date.now(),
@@ -20,24 +25,25 @@ export const saveGuestCache = (bookingId: number, guests: Guest[]) => {
         details: g.details ?? {},
         faceImage: g.faceImage ?? "",
         documentImage: g.documentImage ?? "",
+        bookingRoomId: g.bookingRoomId,
       })),
     };
-    localStorage.setItem(guestCacheKey(bookingId), JSON.stringify(payload));
+    localStorage.setItem(guestCacheKey(bookingId, bookingRoomId), JSON.stringify(payload));
     // debug log removed
   } catch (e) {
     console.warn("[guest-cache] save failed", e);
   }
 };
 
-export const loadGuestCache = (bookingId: number): Guest[] => {
+export const loadGuestCache = (bookingId: number, bookingRoomId?: number | string | null): Guest[] => {
   try {
-    const raw = localStorage.getItem(guestCacheKey(bookingId));
+    const raw = localStorage.getItem(guestCacheKey(bookingId, bookingRoomId));
     if (!raw) return [];
     const parsed = JSON.parse(raw);
     const ts = Number(parsed?.__ts ?? 0);
     const isCacheValid = ts && Date.now() - ts < GUEST_CACHE_TTL_MS;
     if (!isCacheValid) {
-      localStorage.removeItem(guestCacheKey(bookingId));  // ลบ cache ที่หมดอายุ
+      localStorage.removeItem(guestCacheKey(bookingId, bookingRoomId));  // ลบ cache ที่หมดอายุ
       return [];
     }
     // debug log removed

@@ -822,7 +822,7 @@ const GuestListScreen: React.FC<GuestListScreenProps> = ({
 
     const bid = effectiveBookingId;
     if (bid) {
-      const cachedGuests = loadGuestCache(bid);
+      const cachedGuests = loadGuestCache(bid, bookingRoomIdUsed);
       if (cachedGuests.length > 0) {
         setGuests(normalizeGuestsForDisplay(cachedGuests));
         return;
@@ -878,7 +878,7 @@ const GuestListScreen: React.FC<GuestListScreenProps> = ({
   const saveCacheDebounced = (bookingId: number, nextGuests: Guest[]) => {
     if (saveTimerRef.current) window.clearTimeout(saveTimerRef.current);
     saveTimerRef.current = window.setTimeout(() => {
-      saveGuestCache(bookingId, nextGuests);
+      saveGuestCache(bookingId, nextGuests, bookingRoomIdUsed);
     }, 300);
   };
 
@@ -896,7 +896,7 @@ const handleUpdateGuestDetails = (guestId: string, details: Guest["details"]) =>
 
     // บันทึกข้อมูลลง localStorage หรือส่งไปยัง backend
     const bid = effectiveBookingId;
-    if (bid) saveGuestCache(bid, next); // บันทึกข้อมูลลง localStorage
+    if (bid) saveGuestCache(bid, next, bookingRoomIdUsed); // บันทึกข้อมูลลง localStorage
 
     return next;
   });
@@ -928,13 +928,19 @@ const handleUpdateGuestDetails = (guestId: string, details: Guest["details"]) =>
           const resp = await apiService.fetchGuests(bid);
           if (!mounted) return;
 
-          const backendMapped = mapApiGuestsToUi(resp); // แปลงข้อมูลจาก API
+          let backendMapped = mapApiGuestsToUi(resp); // แปลงข้อมูลจาก API
+          if (bookingRoomIdUsed) {
+            backendMapped = backendMapped.filter((g: any) => {
+              const v = toNumberOrUndef((g as any).bookingRoomId ?? (g as any).booking_room_id);
+              return v === bookingRoomIdUsed;
+            });
+          }
           if (isReadOnly) {
             setGuests(normalizeGuestsForDisplay(backendMapped)); // แสดงผลข้อมูลจาก backend เท่านั้น
             return;
           }
 
-          const cached = loadGuestCache(bid); // โหลดข้อมูลจาก cache
+          const cached = loadGuestCache(bid, bookingRoomIdUsed); // โหลดข้อมูลจาก cache
           const merged = mergeGuestsPreferCache(backendMapped, cached);
           setGuests(normalizeGuestsForDisplay(merged)); // แสดงผลข้อมูล
           return;
@@ -956,13 +962,19 @@ const handleUpdateGuestDetails = (guestId: string, details: Guest["details"]) =>
           const resp = await apiService.fetchGuests(bookingIdNum2); // ดึงข้อมูล guests
           if (!mounted) return;
 
-          const backendMapped = mapApiGuestsToUi(resp);
+          let backendMapped = mapApiGuestsToUi(resp);
+          if (bookingRoomIdUsed) {
+            backendMapped = backendMapped.filter((g: any) => {
+              const v = toNumberOrUndef((g as any).bookingRoomId ?? (g as any).booking_room_id);
+              return v === bookingRoomIdUsed;
+            });
+          }
           if (isReadOnly) {
             setGuests(normalizeGuestsForDisplay(backendMapped)); // แสดงผลข้อมูลจาก backend เท่านั้น
             return;
           }
 
-          const cached = loadGuestCache(bookingIdNum2);
+          const cached = loadGuestCache(bookingIdNum2, bookingRoomIdUsed);
           const merged = mergeGuestsPreferCache(backendMapped, cached);
           setGuests(normalizeGuestsForDisplay(merged)); // แสดงผลข้อมูล
           return;
@@ -1082,15 +1094,21 @@ const handleUpdateGuestDetails = (guestId: string, details: Guest["details"]) =>
       // 7️⃣ รีเฟรชข้อมูล guests
       try {
         const resp = await apiService.fetchGuests(bookingIdNum); // ดึงข้อมูล guests
-        const backendGuests = mapApiGuestsToUi(resp);
+        let backendGuests = mapApiGuestsToUi(resp);
+        if (bookingRoomIdUsed) {
+          backendGuests = backendGuests.filter((g: any) => {
+            const v = toNumberOrUndef((g as any).bookingRoomId ?? (g as any).booking_room_id);
+            return v === bookingRoomIdUsed;
+          });
+        }
 
         const merged = mergeGuestsPreferCache(backendGuests, guests); // ผสมข้อมูลจาก API และ cache
         const normalized = normalizeGuestsForDisplay(merged);
 
-        saveGuestCache(bookingIdNum, normalized); // เก็บข้อมูลใน cache
+        saveGuestCache(bookingIdNum, normalized, bookingRoomIdUsed); // เก็บข้อมูลใน cache
         setGuests(normalized); // อัพเดต state ของ guests
       } catch {
-        saveGuestCache(bookingIdNum, guests); // ถ้าเกิด error ให้เก็บข้อมูลเดิม
+        saveGuestCache(bookingIdNum, guests, bookingRoomIdUsed); // ถ้าเกิด error ให้เก็บข้อมูลเดิม
       }
 
       // 8️⃣ ดึงข้อมูล booking ที่สมบูรณ์จาก API
@@ -1155,7 +1173,7 @@ const handleConfirmDeleteSelected = async () => {
       const bid = effectiveBookingId;
       if (bid) {
         // เซฟทันทีเพื่อไม่ให้ “ของเก่ากลับมา”
-        saveGuestCache(bid, next); // บันทึกข้อมูลที่อัพเดตใน localStorage
+        saveGuestCache(bid, next, bookingRoomIdUsed); // บันทึกข้อมูลที่อัพเดตใน localStorage
       }
 
       return next;

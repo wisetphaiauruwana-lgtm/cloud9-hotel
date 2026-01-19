@@ -377,12 +377,12 @@ const App: React.FC = () => {
               mapBackendGuestToUi(g, idx)
             );
 
-            const cached = loadGuestCache(bid);
+            const cached = loadGuestCache(bid, checkinBookingRoomId);
             const merged = mergeGuestsPreferCache(uiGuests, cached);
 
             setGuests(normalizeGuestsForDisplay(merged));
           } catch {
-            setGuests(normalizeGuestsForDisplay(loadGuestCache(bid)));
+            setGuests(normalizeGuestsForDisplay(loadGuestCache(bid, checkinBookingRoomId)));
           }
         } else {
           setGuests([]);
@@ -492,12 +492,12 @@ const App: React.FC = () => {
             const uiGuests = rawGuests.map((g: any, idx: number) =>
               mapBackendGuestToUi(g, idx)
             );
-            const cached = loadGuestCache(bid);
+            const cached = loadGuestCache(bid, checkinBookingRoomId);
             const merged = mergeGuestsPreferCache(uiGuests, cached);
             setGuests(normalizeGuestsForDisplay(merged));
 
           } catch {
-            setGuests(normalizeGuestsForDisplay(loadGuestCache(bid)));
+            setGuests(normalizeGuestsForDisplay(loadGuestCache(bid, checkinBookingRoomId)));
 
           }
         } else {
@@ -750,7 +750,7 @@ const App: React.FC = () => {
           documentType: DocumentType.IDCard,
         } as Guest,
       ];
-      if (bid) saveGuestCache(bid, next);
+      if (bid) saveGuestCache(bid, next, checkinBookingRoomId);
       return next;
     });
   }, [guests.length, t]);
@@ -759,7 +759,7 @@ const App: React.FC = () => {
     const bid = extractBookingId(booking);
     setGuests(prev => {
       const next = prev.filter(g => g.id !== guestId);
-      if (bid) saveGuestCache(bid, next);
+      if (bid) saveGuestCache(bid, next, checkinBookingRoomId);
       return next;
     });
   }, []);
@@ -779,7 +779,7 @@ const App: React.FC = () => {
         const updated: Guest = { ...g, details, name: finalName };
         return { ...updated, progress: calculateProgress(updated) };
       });
-      if (bid) saveGuestCache(bid, next);
+      if (bid) saveGuestCache(bid, next, checkinBookingRoomId);
       return next;
     });
   };
@@ -800,7 +800,7 @@ const App: React.FC = () => {
         }
         return g;
       });
-      if (bid) saveGuestCache(bid, next);
+      if (bid) saveGuestCache(bid, next, checkinBookingRoomId);
       return next;
     });
     navigateTo(Screen.GuestList);
@@ -867,7 +867,7 @@ const App: React.FC = () => {
 
         return { ...updated, progress: calculateProgress(updated) };
       });
-      if (bid) saveGuestCache(bid, next);
+      if (bid) saveGuestCache(bid, next, checkinBookingRoomId);
       return next;
     });
 
@@ -922,7 +922,7 @@ const App: React.FC = () => {
     }
 
     if (guests.length > 0) {
-      saveGuestCache(bookingId, normalizeGuestsForDisplay(guests));
+      saveGuestCache(bookingId, normalizeGuestsForDisplay(guests), checkinBookingRoomId);
     }
 
       if (updatedBooking) {
