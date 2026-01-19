@@ -942,6 +942,29 @@ const handleUpdateGuestDetails = (guestId: string, details: Guest["details"]) =>
 
         if (!bid && !token) return;
 
+        if (!isBookingInfoCompleted) {
+          const mainGuestName = getMainGuestNameFromBooking(bookingDetail);
+          const base =
+            initialGuests.length > 0
+              ? stripGuestSensitiveData(initialGuests)
+              : guests.length > 0
+                ? stripGuestSensitiveData(guests)
+                : [
+                    {
+                      id: `guest_main_${Date.now()}`,
+                      name: mainGuestName || 'Main Guest',
+                      isMainGuest: true,
+                      progress: 0,
+                      details: {},
+                      documentType: DocumentType.IDCard,
+                      faceImage: '',
+                      documentImage: '',
+                    } as Guest,
+                  ];
+          setGuests(normalizeGuestsForDisplay(base));
+          return;
+        }
+
         fetchedRef.current = true;
         setLoading(true);
         setFetchError(null);
@@ -1014,7 +1037,16 @@ const handleUpdateGuestDetails = (guestId: string, details: Guest["details"]) =>
 
     run();
     return () => { mounted = false; };
-  }, [effectiveBookingId, tokenUsed, isReadOnly, bookingRoomIdUsed]);
+  }, [
+    effectiveBookingId,
+    tokenUsed,
+    isReadOnly,
+    bookingRoomIdUsed,
+    isBookingInfoCompleted,
+    initialGuests,
+    guests,
+    bookingDetail,
+  ]);
 
   const handleRetry = () => {
     fetchedRef.current = false;
