@@ -987,6 +987,14 @@ const handleUpdateGuestDetails = (guestId: string, details: Guest["details"]) =>
         if (!bid && !token) return;
 
         if (!isBookingInfoCompleted) {
+          const hasIncomingImages = initialGuests.some(
+            (g) => !!g.faceImage || !!g.documentImage
+          );
+          if (hasIncomingImages) {
+            setGuests(normalizeGuestsForDisplay(initialGuests));
+            setSeededForPending(true);
+            return;
+          }
           if (!seededForPending) {
             const mainGuestName = getMainGuestNameFromBooking(bookingDetail);
             const base = [
