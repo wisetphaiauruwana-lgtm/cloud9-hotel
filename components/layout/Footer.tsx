@@ -16,7 +16,6 @@ const Footer: React.FC = () => {
       <div className={styles.container}>
         <span>{t('footer.poweredBy')}</span>
         <CloudIcon className="w-8 h-8" />
-        <span className="text-base font-semibold text-gray-900">cloud9</span>
       </div>
     </footer>
   );

@@ -65,9 +65,6 @@ const DocumentTypeScreen: React.FC<{
         >
           {/* Logo */}
           <div className="flex flex-col items-center">
-            <span className="text-xl font-bold tracking-wide">
-              cloud9
-            </span>
           </div>
 
           {/* Title */}

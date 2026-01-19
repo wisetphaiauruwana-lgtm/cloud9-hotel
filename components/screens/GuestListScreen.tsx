@@ -1097,7 +1097,6 @@ const handleConfirmDeleteSelected = async () => {
       <Header
         onBack={onBack}
         logoClassName="w-14 h-14 md:w-16 md:h-16"
-        logoTextClassName="font-bold text-3xl md:text-4xl tracking-widest"
       />
 
       <main className={guestListScreenStyles.main}>
@@ -1196,7 +1195,6 @@ const handleConfirmDeleteSelected = async () => {
         <div className={guestListScreenStyles.poweredByContainer}>
           <span>{t('footer.poweredBy')}</span>
           <CloudIcon className={guestListScreenStyles.poweredByIcon} />
-          <span className="text-base font-semibold text-gray-900">cloud9</span>
         </div>
       </div>
 
@@ -1247,7 +1245,7 @@ const handleConfirmDeleteSelected = async () => {
           </div>
 
           <div className="pb-4 text-center text-xs text-gray-400">
-            {t('footer.poweredBy')} <span className="text-base font-semibold text-gray-900">cloud9</span>
+            {t('footer.poweredBy')}
           </div>
         </div>
       )}

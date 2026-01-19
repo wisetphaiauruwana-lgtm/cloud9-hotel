@@ -177,7 +177,6 @@ const EnterCodeScreen: React.FC<EnterCodeScreenProps> = ({ onSubmit, onBack, err
           <div className={styles.inputContainer}>
             <div className={styles.brand}>
               <CloudIcon className="w-24 h-24 md:w-28 md:h-28" />
-              <div className={styles.brandText}>cloud9</div>
             </div>
             <h1 className={styles.title}>{t('enterCode.title') || "ENTER YOUR CONFIRMATION CODE"}</h1>
 

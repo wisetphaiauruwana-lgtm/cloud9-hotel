@@ -12,7 +12,6 @@ interface HeaderProps {
   showLogo?: boolean;
   showBorder?: boolean;
   logoClassName?: string;
-  logoTextClassName?: string;
 }
 
 const styles = {
@@ -21,7 +20,6 @@ const styles = {
   headerBorder: "border-b border-gray-100",
   backButton: "absolute left-4 md:left-6 lg:left-8 text-gray-500 hover:text-black transition-colors",
   logoContainer: "flex flex-col items-center gap-3 text-black",
-  logoText: "font-bold text-2xl md:text-3xl tracking-widest",
   langSwitcher: "absolute right-4 md:right-6 lg:right-8",
   langButton: "flex items-center space-x-1 text-gray-600 font-semibold hover:text-black transition-colors",
   langDropdown: "absolute right-0 mt-2 w-32 bg-white rounded-lg shadow-xl border border-gray-100 z-20",
@@ -34,7 +32,6 @@ const Header: React.FC<HeaderProps> = ({
   showLogo = true,
   showBorder = true,
   logoClassName,
-  logoTextClassName,
 }) => {
   const { language, setLanguage } = useLanguage();
   const { t } = useTranslation();
@@ -75,7 +72,6 @@ const Header: React.FC<HeaderProps> = ({
       {showLogo && (
         <div className={styles.logoContainer}>
           <CloudIcon className={logoClassName || "w-16 h-16 md:w-20 md:h-20"} />
-          <span className={logoTextClassName || "font-bold text-3xl md:text-4xl tracking-widest"}>cloud9</span>
         </div>
       )}
 

@@ -30,7 +30,6 @@ const PrivacyPolicyScreen: React.FC<PrivacyPolicyScreenProps> = ({ onBack }) => 
       <main className={styles.main}>
         <div className={styles.logoContainer}>
             <CloudIcon className={styles.logoIcon} />
-            <span className={styles.logoText}>cloud9</span>
         </div>
         
         <p 
