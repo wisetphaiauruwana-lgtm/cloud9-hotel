@@ -87,6 +87,7 @@ interface GuestListItemProps {
   onCaptureDocument: () => void;
   isEditing: boolean;
   isReadOnly: boolean;
+  showImages: boolean;
   isSelected: boolean;
   onSelectToggle: () => void;
   onUpdateDetails: (details: Guest['details']) => void;
@@ -98,6 +99,7 @@ const GuestListItem: React.FC<GuestListItemProps> = ({
   onCaptureDocument,
   isEditing,
   isReadOnly,
+  showImages,
   isSelected,
   onSelectToggle,
   onUpdateDetails,
@@ -263,7 +265,7 @@ const GuestListItem: React.FC<GuestListItemProps> = ({
         <div className={guestListItemStyles.content}>
           {isReadOnly ? (
             <div className={guestListItemStyles.verifiedContainer}>
-              {(faceSrc || documentSrc) && (
+              {showImages && (faceSrc || documentSrc) && (
                 <div className={guestListItemStyles.imageGrid}>
                   {faceSrc && (
                     <div>
@@ -633,6 +635,7 @@ const GuestListScreen: React.FC<GuestListScreenProps> = ({
   const [bookingDetail, setBookingDetail] = useState<any>(null);
   const [bookingDetailLoading, setBookingDetailLoading] = useState(false);
   const [bookingDetailError, setBookingDetailError] = useState<string | null>(null);
+  const [bookingInfoStatus, setBookingInfoStatus] = useState<string | null>(null);
   const deleteSelectedLabelRaw = t('guestList.deleteSelected');
   const deleteSelectedLabel = deleteSelectedLabelRaw !== 'guestList.deleteSelected'
     ? deleteSelectedLabelRaw
@@ -666,6 +669,10 @@ const GuestListScreen: React.FC<GuestListScreenProps> = ({
       readBookingRoomIdFromStorage()
     );
   }, [bookingRoomId, location.state]);
+
+  const isBookingInfoCompleted =
+    String(bookingInfoStatus ?? '').toLowerCase() === 'completed';
+  const shouldShowImages = !isReadOnly || isBookingInfoCompleted;
 
   // ✅ FIX: bookingId เปลี่ยน -> reset state กันของเก่าค้าง
   useEffect(() => {
@@ -732,6 +739,31 @@ const GuestListScreen: React.FC<GuestListScreenProps> = ({
       mounted = false;
     };
   }, [effectiveBookingId]);
+
+  useEffect(() => {
+    let mounted = true;
+
+    const run = async () => {
+      if (!tokenUsed) return;
+      try {
+        const bookingResp: any = await apiService.getBookingByToken(tokenUsed, bookingRoomIdUsed);
+        const status =
+          bookingResp?.bookingInfoStatus ??
+          bookingResp?.booking_info_status ??
+          bookingResp?.data?.bookingInfoStatus ??
+          bookingResp?.data?.booking_info_status ??
+          null;
+        if (mounted) setBookingInfoStatus(status ? String(status) : null);
+      } catch {
+        if (mounted) setBookingInfoStatus(null);
+      }
+    };
+
+    run();
+    return () => {
+      mounted = false;
+    };
+  }, [tokenUsed, bookingRoomIdUsed]);
 
   useEffect(() => {
     const next =
@@ -1190,6 +1222,7 @@ const handleConfirmDeleteSelected = async () => {
                 guest={guest}
                 isEditing={isEditing && !isReadOnly}
                 isSelected={selectedGuestIds.includes(guest.id)}
+                showImages={shouldShowImages}
                 onSelectToggle={() => {
                   // ✅ main guest ห้ามเลือก
                   if (guest.isMainGuest) return;
