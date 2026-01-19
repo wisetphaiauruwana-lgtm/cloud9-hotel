@@ -208,6 +208,15 @@ const isCheckedOutBooking = (b: any): boolean => {
 
 const isCheckedInBooking = (b: any): boolean => {
   if (!b) return false;
+  const infoStatusRaw =
+    b?.bookingInfoStatus ??
+    b?.booking_info_status ??
+    b?.data?.bookingInfoStatus ??
+    b?.data?.booking_info_status ??
+    null;
+  if (infoStatusRaw) {
+    return String(infoStatusRaw).toLowerCase() === "completed";
+  }
   if (b?.__alreadyCheckedIn === true || b?.alreadyCheckedIn === true) return true;
   const statusRaw =
     b?.status ??

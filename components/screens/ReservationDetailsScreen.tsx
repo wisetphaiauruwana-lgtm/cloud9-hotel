@@ -195,6 +195,16 @@ const isAlreadyCheckedIn = (raw: any) => {
   if (!raw) return false;
   const b = raw?.data ?? raw?.booking ?? raw;
 
+  const infoStatusRaw =
+    b?.bookingInfoStatus ??
+    b?.booking_info_status ??
+    raw?.bookingInfoStatus ??
+    raw?.booking_info_status ??
+    null;
+  if (infoStatusRaw) {
+    return String(infoStatusRaw).toLowerCase() === 'completed';
+  }
+
   const status = (b?.status ?? raw?.status ?? '').toString().toLowerCase();
   if (
     status.includes('already_checked_in') ||

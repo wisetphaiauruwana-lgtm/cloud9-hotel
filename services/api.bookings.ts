@@ -164,6 +164,7 @@ export const getBookingByToken = async (
   const normalized = {
     ...payload,
     bookingRoomId: payload?.bookingRoomId ?? payload?.booking_room_id,
+    bookingInfoStatus: payload?.bookingInfoStatus ?? payload?.booking_info_status,
 
     // ⭐ สำคัญ: App.tsx ใช้ booking.guests.adults/children
     guests: {
