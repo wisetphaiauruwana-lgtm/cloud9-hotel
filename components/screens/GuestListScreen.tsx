@@ -379,7 +379,7 @@ const guestListScreenStyles = {
   footer: "p-6 md:p-8 lg:p-10 text-center space-y-4",
   footerText: "text-sm md:text-base lg:text-lg text-gray-500",
   poweredByContainer: "pt-4 flex items-center justify-center space-x-1 text-gray-400 text-sm md:text-base lg:text-lg",
-  poweredByIcon: "w-8 h-8 text-black",
+  poweredByIcon: "w-12 h-12 text-black",
 };
 
 /* ---------------- types / helpers ---------------- */
@@ -1096,7 +1096,7 @@ const handleConfirmDeleteSelected = async () => {
     <div className={guestListScreenStyles.container}>
       <Header
         onBack={onBack}
-        logoClassName="w-14 h-14 md:w-16 md:h-16"
+        logoClassName="w-32 h-32 md:w-36 md:h-36"
       />
 
       <main className={guestListScreenStyles.main}>

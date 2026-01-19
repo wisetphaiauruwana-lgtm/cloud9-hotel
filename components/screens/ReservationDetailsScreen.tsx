@@ -595,7 +595,7 @@ const ReservationDetailsScreen: React.FC<ReservationDetailsScreenProps> = ({
       <Header onBack={onBack} compact showLogo={false} showBorder={false} />
       <main className={styles.main}>
         <div className={styles.brand}>
-          <CloudIcon className="w-24 h-24 md:w-28 md:h-28" />
+          <CloudIcon className="w-32 h-32 md:w-36 md:h-36" />
         </div>
         <div className={styles.titleRow}>
           <h1 className={styles.title}>{t('reservationDetails.title') || 'Reservation Details'}</h1>

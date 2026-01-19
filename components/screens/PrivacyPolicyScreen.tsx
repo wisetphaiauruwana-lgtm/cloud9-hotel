@@ -12,7 +12,7 @@ const styles = {
   container: "flex flex-col min-h-screen bg-white",
   main: "flex-grow p-6 md:p-8 lg:p-12",
   logoContainer: "flex flex-col items-center justify-center mb-8",
-  logoIcon: "w-24 h-24 md:w-28 md:h-28",
+  logoIcon: "w-32 h-32 md:w-36 md:h-36",
   logoText: "font-bold text-3xl md:text-4xl mt-2 text-black",
   introText: "mb-6 text-sm md:text-base lg:text-lg text-gray-600",
   content: "space-y-6 text-sm md:text-base lg:text-lg text-gray-800",

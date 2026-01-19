@@ -30,7 +30,7 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onStart }) => {
       <main className={styles.main}>
         <div className={styles.content}>
           <div className={styles.brand}>
-            <CloudIcon className="w-24 h-24 md:w-28 md:h-28" />
+            <CloudIcon className="w-32 h-32 md:w-36 md:h-36" />
           </div>
           <h1 className={styles.title}>{t('welcome.title') || "READY TO BEGIN YOUR CHECK-IN?"}</h1>
           <p className={styles.subtitle}>{t('welcome.subtitle') || "Your seamless check-in experience starts here."}</p>
