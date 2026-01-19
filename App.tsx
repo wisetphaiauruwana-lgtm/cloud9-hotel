@@ -206,6 +206,26 @@ const isCheckedOutBooking = (b: any): boolean => {
   return false;
 };
 
+const isCheckedInBooking = (b: any): boolean => {
+  if (!b) return false;
+  if (b?.__alreadyCheckedIn === true || b?.alreadyCheckedIn === true) return true;
+  const statusRaw =
+    b?.status ??
+    b?.bookingStatus ??
+    b?.booking_status ??
+    b?.roomStatus ??
+    b?.room_status ??
+    '';
+  const status = String(statusRaw).toLowerCase();
+  if (status.includes('checked-in') || status.includes('checked in') || status.includes('checkedin')) {
+    return true;
+  }
+  if (b?.checkedInAt || b?.checked_in_at || b?.checkinCompleted === true || b?.checkin_completed === true) {
+    return true;
+  }
+  return false;
+};
+
 const App: React.FC = () => {
   const SCREEN_STORAGE_KEY = "current_screen";
   const [screen, setScreen] = useState<Screen>(() => {
@@ -591,7 +611,11 @@ const App: React.FC = () => {
               });
               setGuestListBookingId(bookingIdNum);
               setIsGuestListReadOnly(true);
-              navigateTo(Screen.PostCheckinDetails);
+              if (isCheckedInBooking(bk)) {
+                navigateTo(Screen.PostCheckinDetails);
+              } else {
+                navigateTo(Screen.ReservationDetails);
+              }
             } catch (err) {
               console.error('Auto bookingId load failed', err);
               navigateTo(Screen.EnterCode);
@@ -616,6 +640,17 @@ const App: React.FC = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    if (screen !== Screen.PostCheckinDetails) return;
+    if (!booking) {
+      navigateTo(Screen.ReservationDetails);
+      return;
+    }
+    if (!isCheckedInBooking(booking)) {
+      navigateTo(Screen.ReservationDetails);
+    }
+  }, [screen, booking, navigateTo]);
 
   useEffect(() => {
     const bookingId =
