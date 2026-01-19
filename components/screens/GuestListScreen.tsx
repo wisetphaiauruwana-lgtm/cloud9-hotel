@@ -525,6 +525,12 @@ const mapApiGuestsToUi = (raw: any): Guest[] => {
         ? g.progress
         : (faceImage && documentImage ? 100 : (faceImage ? 50 : 0));
 
+    const bookingRoomId =
+      g.bookingRoomId ??
+      g.booking_room_id ??
+      g.bookingRoomID ??
+      undefined;
+
     const ui: Guest = {
       id,
       name: fullName,
@@ -534,6 +540,7 @@ const mapApiGuestsToUi = (raw: any): Guest[] => {
       details,
       faceImage,
       documentImage,
+      bookingRoomId,
     } as any;
 
     return ui;
@@ -1071,7 +1078,13 @@ const handleUpdateGuestDetails = (guestId: string, details: Guest["details"]) =>
 
   // ✅ FIX: ตัวนี้ใช้ render จริง (ViewGuests = isReadOnly)
   const displayGuests = useMemo(() => {
-    const normalized = normalizeGuestsForDisplay(guests);
+    let normalized = normalizeGuestsForDisplay(guests);
+    if (isReadOnly && bookingRoomIdUsed) {
+      normalized = normalized.filter((g) => {
+        const v = toNumberOrUndef((g as any).bookingRoomId ?? (g as any).booking_room_id);
+        return v === bookingRoomIdUsed;
+      });
+    }
     if (!isReadOnly) return normalized; // ถ้าไม่เป็น read-only ก็แสดงข้อมูลทั้งหมด
 
     const mainGuestName = getMainGuestNameFromBooking(bookingDetail);
@@ -1088,7 +1101,7 @@ const handleUpdateGuestDetails = (guestId: string, details: Guest["details"]) =>
     }
 
     return aligned.filter(isMeaningfulGuest); // กรองข้อมูลที่มีการกรอกจริง
-  }, [guests, isReadOnly, bookingDetail]);
+  }, [guests, isReadOnly, bookingDetail, bookingRoomIdUsed]);
 
   // ✅ ลบผู้เข้าพักที่เลือก (ลบจาก state + cache + แจ้ง parent)
  // เมื่อมีการลบหรือแก้ไขข้อมูล

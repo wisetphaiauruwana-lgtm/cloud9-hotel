@@ -1212,10 +1212,15 @@ const App: React.FC = () => {
             token={checkinToken}
             onBack={() => navigateTo(Screen.Welcome)}
             onCheckout={() => navigateTo(Screen.Checkout)}
-            onViewGuests={(bookingIdArg) => {
+            onViewGuests={(bookingIdArg, bookingRoomIdArg) => {
               setIsGuestListReadOnly(true);
               const bookingIdNum = bookingIdArg ? Number(bookingIdArg) : undefined;
               if (bookingIdNum) setGuestListBookingId(bookingIdNum);
+              const bookingRoomIdNum = bookingRoomIdArg ? Number(bookingRoomIdArg) : undefined;
+              if (bookingRoomIdNum && !Number.isNaN(bookingRoomIdNum)) {
+                setCheckinBookingRoomId(bookingRoomIdNum);
+                try { localStorage.setItem("checkin_booking_room_id", String(bookingRoomIdNum)); } catch { }
+              }
 
               try {
                 const q = new URLSearchParams(window.location.search);
@@ -1226,13 +1231,13 @@ const App: React.FC = () => {
                   (newSearch ? `?${newSearch}` : "") +
                   window.location.hash;
                 window.history.replaceState({}, document.title, newUrl);
-                if (bookingIdNum) localStorage.setItem(CHECKIN_BOOKING_ID_KEY, String(bookingIdNum));
-              } catch {
-                // ignore
-              }
+              if (bookingIdNum) localStorage.setItem(CHECKIN_BOOKING_ID_KEY, String(bookingIdNum));
+            } catch {
+              // ignore
+            }
 
-              setGuests([]);
-              navigateTo(Screen.GuestList);
+            setGuests([]);
+            navigateTo(Screen.GuestList);
             }}
             onViewRoomAccess={() => navigateTo(Screen.RoomAccessInformation)}
             onExtendStay={() => navigateTo(Screen.ExtendStay)}

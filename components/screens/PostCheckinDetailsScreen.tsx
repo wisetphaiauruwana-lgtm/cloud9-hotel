@@ -93,10 +93,20 @@ const pickMainGuestFromBooking = (b: any): string => {
 const GUEST_CACHE_TTL_MS = 24 * 60 * 60 * 1000;
 const guestCacheKey = (bookingId: number) => `guest_cache_${bookingId}`;
 const CHECKIN_BOOKING_ID_KEY = "checkin_booking_id";
+const CHECKIN_BOOKING_ROOM_ID_KEY = "checkin_booking_room_id";
 const getBookingIdFromQuery = () => {
   try {
     const qs = new URLSearchParams(window.location.search);
     return qs.get('bookingId');
+  } catch {
+    return null;
+  }
+};
+
+const getBookingRoomIdFromQuery = () => {
+  try {
+    const qs = new URLSearchParams(window.location.search);
+    return qs.get('bookingRoomId') ?? qs.get('booking_room_id');
   } catch {
     return null;
   }
@@ -182,7 +192,7 @@ interface PostCheckinDetailsScreenProps {
 
   onBack: () => void;
   onCheckout: () => void;
-  onViewGuests: (bookingId?: number | string) => void;
+  onViewGuests: (bookingId?: number | string, bookingRoomId?: number | string) => void;
   onViewRoomAccess: () => void;
   onExtendStay: () => void;
 }
@@ -229,6 +239,17 @@ const PostCheckinDetailsScreen: React.FC<PostCheckinDetailsScreenProps> = ({
     );
   }, [booking, bookingId, liveBooking, scannedBookingId]);
 
+  const resolvedBookingRoomId = useMemo(() => {
+    const queryRoomId = toNumberOrUndef(getBookingRoomIdFromQuery());
+    const storedRoomId = toNumberOrUndef(localStorage.getItem(CHECKIN_BOOKING_ROOM_ID_KEY));
+    return (
+      queryRoomId ??
+      toNumberOrUndef(liveBooking?.bookingRoomId) ??
+      toNumberOrUndef(liveBooking?.booking_room_id) ??
+      storedRoomId
+    );
+  }, [liveBooking]);
+
   const liveBookingId = useMemo(() => {
     return (
       toNumberOrUndef(liveBooking?.dbId) ??
@@ -251,6 +272,15 @@ const PostCheckinDetailsScreen: React.FC<PostCheckinDetailsScreenProps> = ({
       // ignore
     }
   }, [resolvedBookingId]);
+
+  useEffect(() => {
+    if (!resolvedBookingRoomId) return;
+    try {
+      localStorage.setItem(CHECKIN_BOOKING_ROOM_ID_KEY, String(resolvedBookingRoomId));
+    } catch {
+      // ignore
+    }
+  }, [resolvedBookingRoomId]);
 
 
   // --------------------
@@ -554,6 +584,7 @@ const PostCheckinDetailsScreen: React.FC<PostCheckinDetailsScreenProps> = ({
               label={t('postCheckin.viewGuests')}
               onClick={() => {
                 const currentBookingId = resolvedBookingId ?? actionBookingId;
+                const currentBookingRoomId = resolvedBookingRoomId;
                 if (currentBookingId) {
                   try {
                     localStorage.setItem(CHECKIN_BOOKING_ID_KEY, String(currentBookingId));
@@ -561,7 +592,14 @@ const PostCheckinDetailsScreen: React.FC<PostCheckinDetailsScreenProps> = ({
                     // ignore storage errors
                   }
                 }
-                onViewGuests(currentBookingId);
+                if (currentBookingRoomId) {
+                  try {
+                    localStorage.setItem(CHECKIN_BOOKING_ROOM_ID_KEY, String(currentBookingRoomId));
+                  } catch {
+                    // ignore storage errors
+                  }
+                }
+                onViewGuests(currentBookingId, currentBookingRoomId ?? undefined);
               }}
             />
             <ActionLink
