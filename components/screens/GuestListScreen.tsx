@@ -648,7 +648,6 @@ const GuestListScreen: React.FC<GuestListScreenProps> = ({
   const [bookingDetailLoading, setBookingDetailLoading] = useState(false);
   const [bookingDetailError, setBookingDetailError] = useState<string | null>(null);
   const [bookingInfoStatus, setBookingInfoStatus] = useState<string | null>(null);
-  const [pendingSeeded, setPendingSeeded] = useState(false);
   const deleteSelectedLabelRaw = t('guestList.deleteSelected');
   const deleteSelectedLabel = deleteSelectedLabelRaw !== 'guestList.deleteSelected'
     ? deleteSelectedLabelRaw
@@ -791,11 +790,15 @@ const GuestListScreen: React.FC<GuestListScreenProps> = ({
   }, [propToken, location.state]);
 
   useEffect(() => {
-    setPendingSeeded(false);
-    if (!isBookingInfoCompleted) {
-      setGuests([]);
+    if (isBookingInfoCompleted) return;
+    if (guests.length > 0) {
+      setGuests(stripGuestSensitiveData(guests));
+      return;
     }
-  }, [tokenUsed, bookingRoomIdUsed, isBookingInfoCompleted]);
+    if (initialGuests.length > 0) {
+      setGuests(stripGuestSensitiveData(initialGuests));
+    }
+  }, [isBookingInfoCompleted]);
 
   useEffect(() => {
     let mounted = true;
@@ -940,11 +943,12 @@ const handleUpdateGuestDetails = (guestId: string, details: Guest["details"]) =>
         if (!bid && !token) return;
 
         if (!isBookingInfoCompleted) {
-          if (!pendingSeeded) {
-            const mainGuestName = getMainGuestNameFromBooking(bookingDetail);
-            const base =
-              initialGuests.length > 0
-                ? stripGuestSensitiveData(initialGuests)
+          const mainGuestName = getMainGuestNameFromBooking(bookingDetail);
+          const base =
+            initialGuests.length > 0
+              ? stripGuestSensitiveData(initialGuests)
+              : guests.length > 0
+                ? stripGuestSensitiveData(guests)
                 : [
                     {
                       id: `guest_main_${Date.now()}`,
@@ -957,9 +961,7 @@ const handleUpdateGuestDetails = (guestId: string, details: Guest["details"]) =>
                       documentImage: '',
                     } as Guest,
                   ];
-            setGuests(normalizeGuestsForDisplay(base));
-            setPendingSeeded(true);
-          }
+          setGuests(normalizeGuestsForDisplay(base));
           return;
         }
 
@@ -1042,8 +1044,8 @@ const handleUpdateGuestDetails = (guestId: string, details: Guest["details"]) =>
     bookingRoomIdUsed,
     isBookingInfoCompleted,
     initialGuests,
+    guests,
     bookingDetail,
-    pendingSeeded,
   ]);
 
   const handleRetry = () => {
