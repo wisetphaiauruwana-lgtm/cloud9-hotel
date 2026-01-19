@@ -865,7 +865,20 @@ const GuestListScreen: React.FC<GuestListScreenProps> = ({
     const localIds = guests.map(g => g.id).join('|');
     if (incomingIds !== localIds) {
       setGuests(incoming);
+      return;
     }
+
+    // If photos were captured in parent, refresh local list to show them.
+    const localMap = new Map(guests.map((g) => [g.id, g]));
+    const hasNewImages = incoming.some((inc) => {
+      const local = localMap.get(inc.id);
+      if (!local) return true;
+      return (
+        (!!inc.faceImage && !local.faceImage) ||
+        (!!inc.documentImage && !local.documentImage)
+      );
+    });
+    if (hasNewImages) setGuests(incoming);
   }, [initialGuests, guests]);
 
   // pendingConsentLogs persistence
