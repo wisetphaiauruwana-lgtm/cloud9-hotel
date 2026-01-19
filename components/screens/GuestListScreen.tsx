@@ -648,6 +648,8 @@ const GuestListScreen: React.FC<GuestListScreenProps> = ({
   const [bookingDetailLoading, setBookingDetailLoading] = useState(false);
   const [bookingDetailError, setBookingDetailError] = useState<string | null>(null);
   const [bookingInfoStatus, setBookingInfoStatus] = useState<string | null>(null);
+  const [seededForPending, setSeededForPending] = useState(false);
+  const [allowIncomingImages, setAllowIncomingImages] = useState(false);
   const deleteSelectedLabelRaw = t('guestList.deleteSelected');
   const deleteSelectedLabel = deleteSelectedLabelRaw !== 'guestList.deleteSelected'
     ? deleteSelectedLabelRaw
@@ -725,6 +727,11 @@ const GuestListScreen: React.FC<GuestListScreenProps> = ({
   }, [bookingRoomIdUsed]);
 
   useEffect(() => {
+    setSeededForPending(false);
+    setAllowIncomingImages(false);
+  }, [tokenUsed, bookingRoomIdUsed, isBookingInfoCompleted]);
+
+  useEffect(() => {
     let mounted = true;
     if (!effectiveBookingId) {
       setBookingDetail(null);
@@ -790,17 +797,6 @@ const GuestListScreen: React.FC<GuestListScreenProps> = ({
   }, [propToken, location.state]);
 
   useEffect(() => {
-    if (isBookingInfoCompleted) return;
-    if (guests.length > 0) {
-      setGuests(stripGuestSensitiveData(guests));
-      return;
-    }
-    if (initialGuests.length > 0) {
-      setGuests(stripGuestSensitiveData(initialGuests));
-    }
-  }, [isBookingInfoCompleted]);
-
-  useEffect(() => {
     let mounted = true;
 
     const run = async () => {
@@ -840,6 +836,7 @@ const GuestListScreen: React.FC<GuestListScreenProps> = ({
 
   // ✅ hydrate จาก cache/props แค่ครั้งแรก แล้วให้ API fetch มาอัปเดตภายหลัง
   useEffect(() => {
+    if (!isBookingInfoCompleted) return;
     if (isReadOnly) return;
     if (guests.length > 0) return;
 
@@ -855,12 +852,44 @@ const GuestListScreen: React.FC<GuestListScreenProps> = ({
     if (initialGuests.length > 0) {
       setGuests(normalizeGuestsForDisplay(initialGuests));
     }
-  }, [effectiveBookingId, initialGuests, guests.length]);
+  }, [effectiveBookingId, initialGuests, guests.length, isBookingInfoCompleted]);
 
-  // Sync guest list when parent updates (e.g., Add Guest)
+  // Sync guest list when parent updates (e.g., Add Guest / capture image)
   useEffect(() => {
     if (isReadOnly) return;
     const incoming = normalizeGuestsForDisplay(initialGuests);
+
+    if (!isBookingInfoCompleted) {
+      // Only pull in new images while keeping local details editable.
+      if (!allowIncomingImages && !guests.some((g) => g.faceImage || g.documentImage)) {
+        return;
+      }
+      const incomingMap = new Map(incoming.map((g) => [g.id, g]));
+      const hasNewImages = incoming.some((inc) => {
+        const local = guests.find((g) => g.id === inc.id);
+        if (!local) return false;
+        return (
+          (!!inc.faceImage && !local.faceImage) ||
+          (!!inc.documentImage && !local.documentImage)
+        );
+      });
+      if (hasNewImages) {
+        setGuests((prev) =>
+          prev.map((g) => {
+            const inc = incomingMap.get(g.id);
+            if (!inc) return g;
+            return {
+              ...g,
+              faceImage: inc.faceImage || g.faceImage,
+              documentImage: inc.documentImage || g.documentImage,
+              progress: inc.progress ?? g.progress,
+            };
+          })
+        );
+      }
+      return;
+    }
+
     const incomingIds = incoming.map(g => g.id).join('|');
     const localIds = guests.map(g => g.id).join('|');
     if (incomingIds !== localIds) {
@@ -879,7 +908,7 @@ const GuestListScreen: React.FC<GuestListScreenProps> = ({
       );
     });
     if (hasNewImages) setGuests(incoming);
-  }, [initialGuests, guests]);
+  }, [initialGuests, guests, isBookingInfoCompleted, isReadOnly, allowIncomingImages]);
 
   // pendingConsentLogs persistence
   useEffect(() => {
@@ -956,25 +985,23 @@ const handleUpdateGuestDetails = (guestId: string, details: Guest["details"]) =>
         if (!bid && !token) return;
 
         if (!isBookingInfoCompleted) {
-          const mainGuestName = getMainGuestNameFromBooking(bookingDetail);
-          const base =
-            initialGuests.length > 0
-              ? stripGuestSensitiveData(initialGuests)
-              : guests.length > 0
-                ? stripGuestSensitiveData(guests)
-                : [
-                    {
-                      id: `guest_main_${Date.now()}`,
-                      name: mainGuestName || 'Main Guest',
-                      isMainGuest: true,
-                      progress: 0,
-                      details: {},
-                      documentType: DocumentType.IDCard,
-                      faceImage: '',
-                      documentImage: '',
-                    } as Guest,
-                  ];
-          setGuests(normalizeGuestsForDisplay(base));
+          if (!seededForPending) {
+            const mainGuestName = getMainGuestNameFromBooking(bookingDetail);
+            const base = [
+              {
+                id: `guest_main_${Date.now()}`,
+                name: mainGuestName || 'Main Guest',
+                isMainGuest: true,
+                progress: 0,
+                details: {},
+                documentType: DocumentType.IDCard,
+                faceImage: '',
+                documentImage: '',
+              } as Guest,
+            ];
+            setGuests(normalizeGuestsForDisplay(base));
+            setSeededForPending(true);
+          }
           return;
         }
 
@@ -1056,9 +1083,8 @@ const handleUpdateGuestDetails = (guestId: string, details: Guest["details"]) =>
     isReadOnly,
     bookingRoomIdUsed,
     isBookingInfoCompleted,
-    initialGuests,
-    guests,
     bookingDetail,
+    seededForPending,
   ]);
 
   const handleRetry = () => {
@@ -1319,8 +1345,14 @@ const handleConfirmDeleteSelected = async () => {
                       : [...prev, guest.id]
                   );
                 }}
-                onTakePhoto={() => onTakePhoto(guest.id)}
-                onCaptureDocument={() => onCaptureDocument(guest.id)}
+                onTakePhoto={() => {
+                  setAllowIncomingImages(true);
+                  onTakePhoto(guest.id);
+                }}
+                onCaptureDocument={() => {
+                  setAllowIncomingImages(true);
+                  onCaptureDocument(guest.id);
+                }}
                 onUpdateDetails={(details) => handleUpdateGuestDetails(guest.id, details)}
                 isReadOnly={isReadOnly}
               />
