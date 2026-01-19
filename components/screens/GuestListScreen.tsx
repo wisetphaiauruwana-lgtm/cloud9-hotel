@@ -854,37 +854,15 @@ const GuestListScreen: React.FC<GuestListScreenProps> = ({
     }
   }, [effectiveBookingId, initialGuests, guests.length]);
 
-  // Sync guest list when parent updates (e.g., Add Guest / capture image)
+  // Sync guest list when parent updates (e.g., Add Guest)
   useEffect(() => {
     if (isReadOnly) return;
     const incoming = normalizeGuestsForDisplay(initialGuests);
-    const incomingMap = new Map(incoming.map((g) => [g.id, g]));
-    const localMap = new Map(guests.map((g) => [g.id, g]));
-    let changed = incoming.length !== guests.length;
-
-    if (!changed) {
-      for (const [id, inc] of incomingMap) {
-        const local = localMap.get(id);
-        if (!local) {
-          changed = true;
-          break;
-        }
-        const incDetails = JSON.stringify(inc.details ?? {});
-        const localDetails = JSON.stringify(local.details ?? {});
-        if (
-          inc.name !== local.name ||
-          inc.progress !== local.progress ||
-          inc.faceImage !== local.faceImage ||
-          inc.documentImage !== local.documentImage ||
-          incDetails !== localDetails
-        ) {
-          changed = true;
-          break;
-        }
-      }
+    const incomingIds = incoming.map(g => g.id).join('|');
+    const localIds = guests.map(g => g.id).join('|');
+    if (incomingIds !== localIds) {
+      setGuests(incoming);
     }
-
-    if (changed) setGuests(incoming);
   }, [initialGuests, guests]);
 
   // pendingConsentLogs persistence
