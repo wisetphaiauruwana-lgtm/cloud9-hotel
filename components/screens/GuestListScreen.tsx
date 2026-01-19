@@ -858,6 +858,13 @@ const GuestListScreen: React.FC<GuestListScreenProps> = ({
     const incoming = normalizeGuestsForDisplay(initialGuests);
 
     if (!isBookingInfoCompleted) {
+      const incomingIds = incoming.map(g => g.id).join('|');
+      const localIds = guests.map(g => g.id).join('|');
+      if (incoming.length > 0 && incomingIds !== localIds) {
+        setGuests(incoming);
+        return;
+      }
+
       // Only pull in new images while keeping local details editable.
       const incomingMap = new Map(incoming.map((g) => [g.id, g]));
       const hasNewImages = incoming.some((inc) => {
