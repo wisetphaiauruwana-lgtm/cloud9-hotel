@@ -65,6 +65,10 @@ const styles = {
   confirmButton: 'rounded-md py-3 text-xs tracking-[0.2em]',
   confirmWrap: 'max-w-[360px] md:max-w-[600px] lg:max-w-[720px] mx-auto w-full',
   statusWrap: 'max-w-[360px] md:max-w-[600px] lg:max-w-[720px] mx-auto w-full',
+  consentBox:
+    'max-w-[360px] md:max-w-[600px] lg:max-w-[720px] mx-auto w-full rounded-lg border border-gray-200 bg-slate-50 p-3 text-xs text-gray-700',
+  consentRow: 'mt-3 flex items-start gap-2 text-[11px] text-gray-800',
+  consentLink: 'text-gray-900 underline underline-offset-2',
 };
 
 /* safe getter that supports dotted paths */
@@ -318,7 +322,7 @@ const ReservationDetailsScreen: React.FC<ReservationDetailsScreenProps> = ({
     initialBooking ? mapBackendBookingToUi(initialBooking) : null
   );
 
-  const [agreed, setAgreed] = useState(true);
+  const [agreed, setAgreed] = useState(false);
   const [loading, setLoading] = useState(false);
   const [fetchError, setFetchError] = useState<string | null>(null);
 
@@ -775,6 +779,31 @@ const ReservationDetailsScreen: React.FC<ReservationDetailsScreenProps> = ({
       </main>
 
       <div className={styles.footer}>
+        <div className={styles.consentBox}>
+          <div
+            dangerouslySetInnerHTML={{
+              __html: t('privacyPolicy.intro') || '',
+            }}
+          />
+          <label className={styles.consentRow}>
+            <input
+              type="checkbox"
+              className="mt-0.5 h-3 w-3"
+              checked={agreed}
+              onChange={(e) => setAgreed(e.target.checked)}
+            />
+            <span>
+              {t('reservationDetails.agreement') || 'I agree to the privacy policy.'}{' '}
+              <button
+                type="button"
+                onClick={onShowPrivacyPolicy}
+                className={styles.consentLink}
+              >
+                {t('reservationDetails.readDetails') || 'Read details'}
+              </button>
+            </span>
+          </label>
+        </div>
         <div className={styles.confirmWrap}>
           <Button
             onClick={() => void handleConfirm()}
