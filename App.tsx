@@ -93,13 +93,6 @@ const mapBackendGuestToUi = (g: any, idx: number): Guest => {
       docTypeRaw.includes('ID') ? DocumentType.IDCard :
         (g.documentType ?? DocumentType.IDCard);
 
-  const bookingRoomId =
-    g.bookingRoomId ??
-    g.booking_room_id ??
-    g.bookingRoomID ??
-    g.bookingRoom ??
-    undefined;
-
   return {
     id,
     name,
@@ -117,18 +110,11 @@ const mapBackendGuestToUi = (g: any, idx: number): Guest => {
     },
     faceImage,
     documentImage,
-    bookingRoomId,
     progress:
       typeof g.progress === 'number'
         ? g.progress
         : (faceImage && documentImage ? 100 : (faceImage ? 50 : 0)),
   } as Guest;
-};
-
-const withBookingRoomId = (guest: Guest, bookingRoomId?: number) => {
-  if (!bookingRoomId) return guest;
-  if (guest.bookingRoomId) return guest;
-  return { ...guest, bookingRoomId };
 };
 
 // ✅ เลือก record "ดีที่สุด" ต่อ 1 คน (กันซ้ำ/กัน record เก่ามาทับ)
@@ -394,17 +380,9 @@ const App: React.FC = () => {
             const cached = loadGuestCache(bid, checkinBookingRoomId);
             const merged = mergeGuestsPreferCache(uiGuests, cached);
 
-            setGuests(
-              normalizeGuestsForDisplay(merged).map((g) =>
-                withBookingRoomId(g, checkinBookingRoomId)
-              )
-            );
+            setGuests(normalizeGuestsForDisplay(merged));
           } catch {
-            setGuests(
-              normalizeGuestsForDisplay(loadGuestCache(bid, checkinBookingRoomId)).map((g) =>
-                withBookingRoomId(g, checkinBookingRoomId)
-              )
-            );
+            setGuests(normalizeGuestsForDisplay(loadGuestCache(bid, checkinBookingRoomId)));
           }
         } else {
           setGuests([]);
@@ -516,18 +494,10 @@ const App: React.FC = () => {
             );
             const cached = loadGuestCache(bid, checkinBookingRoomId);
             const merged = mergeGuestsPreferCache(uiGuests, cached);
-            setGuests(
-              normalizeGuestsForDisplay(merged).map((g) =>
-                withBookingRoomId(g, checkinBookingRoomId)
-              )
-            );
+            setGuests(normalizeGuestsForDisplay(merged));
 
           } catch {
-            setGuests(
-              normalizeGuestsForDisplay(loadGuestCache(bid, checkinBookingRoomId)).map((g) =>
-                withBookingRoomId(g, checkinBookingRoomId)
-              )
-            );
+            setGuests(normalizeGuestsForDisplay(loadGuestCache(bid, checkinBookingRoomId)));
 
           }
         } else {
@@ -565,7 +535,6 @@ const App: React.FC = () => {
             isMainGuest: true,
             progress: 0,
             documentType: DocumentType.IDCard,
-            bookingRoomId: checkinBookingRoomId,
           } as Guest,
         ]);
       } else {
@@ -573,7 +542,7 @@ const App: React.FC = () => {
           mapBackendGuestToUi(g, idx)
         );
         const safeGuests = uiGuests.map((g, idx) => ({
-          ...withBookingRoomId(g, checkinBookingRoomId),
+          ...g,
           name: String(g.name ?? "").trim() ? g.name : `Guest ${idx + 1}`,
         }));
         setGuests(safeGuests);
@@ -779,7 +748,6 @@ const App: React.FC = () => {
           isMainGuest: false,
           progress: 0,
           documentType: DocumentType.IDCard,
-          bookingRoomId: checkinBookingRoomId,
         } as Guest,
       ];
       if (bid) saveGuestCache(bid, next, checkinBookingRoomId);
@@ -808,12 +776,7 @@ const App: React.FC = () => {
 
         if (first || last) finalName = [first, last].filter(Boolean).join(' ');
 
-        const updated: Guest = {
-          ...g,
-          details,
-          name: finalName,
-          bookingRoomId: g.bookingRoomId ?? checkinBookingRoomId,
-        };
+        const updated: Guest = { ...g, details, name: finalName };
         return { ...updated, progress: calculateProgress(updated) };
       });
       if (bid) saveGuestCache(bid, next, checkinBookingRoomId);
@@ -832,11 +795,7 @@ const App: React.FC = () => {
     setGuests(prev => {
       const next = prev.map(g => {
         if (g.id === activeGuestId) {
-          const updated: Guest = {
-            ...g,
-            faceImage: photo,
-            bookingRoomId: g.bookingRoomId ?? checkinBookingRoomId,
-          };
+          const updated: Guest = { ...g, faceImage: photo };
           return { ...updated, progress: calculateProgress(updated) };
         }
         return g;
@@ -904,7 +863,6 @@ const App: React.FC = () => {
           documentType,
           details: newDetails,
           name: finalName,
-          bookingRoomId: g.bookingRoomId ?? checkinBookingRoomId,
         };
 
         return { ...updated, progress: calculateProgress(updated) };
@@ -941,7 +899,6 @@ const App: React.FC = () => {
         faceImage: prev.find(g => g.isMainGuest)?.faceImage,  // รูปภาพของผู้จองหลัก
         documentImage: prev.find(g => g.isMainGuest)?.documentImage,  // รูปภาพเอกสาร
         email,  // เพิ่มอีเมล แต่จะไม่แสดงใน UI
-        bookingRoomId: checkinBookingRoomId,
       } as Guest;
 
       // ส่งข้อมูลผู้จองหลักและข้อมูลอื่นๆ ไปยัง GuestListScreen
