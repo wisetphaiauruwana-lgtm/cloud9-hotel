@@ -649,7 +649,6 @@ const GuestListScreen: React.FC<GuestListScreenProps> = ({
   const [bookingDetailError, setBookingDetailError] = useState<string | null>(null);
   const [bookingInfoStatus, setBookingInfoStatus] = useState<string | null>(null);
   const [seededForPending, setSeededForPending] = useState(false);
-  const [allowIncomingImages, setAllowIncomingImages] = useState(false);
   const deleteSelectedLabelRaw = t('guestList.deleteSelected');
   const deleteSelectedLabel = deleteSelectedLabelRaw !== 'guestList.deleteSelected'
     ? deleteSelectedLabelRaw
@@ -728,7 +727,6 @@ const GuestListScreen: React.FC<GuestListScreenProps> = ({
 
   useEffect(() => {
     setSeededForPending(false);
-    setAllowIncomingImages(false);
   }, [tokenUsed, bookingRoomIdUsed, isBookingInfoCompleted]);
 
   useEffect(() => {
@@ -861,9 +859,6 @@ const GuestListScreen: React.FC<GuestListScreenProps> = ({
 
     if (!isBookingInfoCompleted) {
       // Only pull in new images while keeping local details editable.
-      if (!allowIncomingImages && !guests.some((g) => g.faceImage || g.documentImage)) {
-        return;
-      }
       const incomingMap = new Map(incoming.map((g) => [g.id, g]));
       const hasNewImages = incoming.some((inc) => {
         const local = guests.find((g) => g.id === inc.id);
@@ -908,7 +903,7 @@ const GuestListScreen: React.FC<GuestListScreenProps> = ({
       );
     });
     if (hasNewImages) setGuests(incoming);
-  }, [initialGuests, guests, isBookingInfoCompleted, isReadOnly, allowIncomingImages]);
+  }, [initialGuests, guests, isBookingInfoCompleted, isReadOnly]);
 
   // pendingConsentLogs persistence
   useEffect(() => {
@@ -1345,14 +1340,8 @@ const handleConfirmDeleteSelected = async () => {
                       : [...prev, guest.id]
                   );
                 }}
-                onTakePhoto={() => {
-                  setAllowIncomingImages(true);
-                  onTakePhoto(guest.id);
-                }}
-                onCaptureDocument={() => {
-                  setAllowIncomingImages(true);
-                  onCaptureDocument(guest.id);
-                }}
+                onTakePhoto={() => onTakePhoto(guest.id)}
+                onCaptureDocument={() => onCaptureDocument(guest.id)}
                 onUpdateDetails={(details) => handleUpdateGuestDetails(guest.id, details)}
                 isReadOnly={isReadOnly}
               />
