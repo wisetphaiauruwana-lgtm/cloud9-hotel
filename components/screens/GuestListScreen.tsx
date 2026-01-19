@@ -649,7 +649,6 @@ const GuestListScreen: React.FC<GuestListScreenProps> = ({
   const [bookingDetailError, setBookingDetailError] = useState<string | null>(null);
   const [bookingInfoStatus, setBookingInfoStatus] = useState<string | null>(null);
   const [seededForPending, setSeededForPending] = useState(false);
-  const [allowIncomingImages, setAllowIncomingImages] = useState(false);
   const deleteSelectedLabelRaw = t('guestList.deleteSelected');
   const deleteSelectedLabel = deleteSelectedLabelRaw !== 'guestList.deleteSelected'
     ? deleteSelectedLabelRaw
@@ -728,7 +727,6 @@ const GuestListScreen: React.FC<GuestListScreenProps> = ({
 
   useEffect(() => {
     setSeededForPending(false);
-    setAllowIncomingImages(false);
   }, [tokenUsed, bookingRoomIdUsed, isBookingInfoCompleted]);
 
   useEffect(() => {
@@ -860,10 +858,14 @@ const GuestListScreen: React.FC<GuestListScreenProps> = ({
     const incoming = normalizeGuestsForDisplay(initialGuests);
 
     if (!isBookingInfoCompleted) {
-      // Only pull in new images while keeping local details editable.
-      if (!allowIncomingImages && !guests.some((g) => g.faceImage || g.documentImage)) {
+      const incomingIds = incoming.map(g => g.id).join('|');
+      const localIds = guests.map(g => g.id).join('|');
+      if (incoming.length > 0 && incomingIds !== localIds) {
+        setGuests(incoming);
         return;
       }
+
+      // Only pull in new images while keeping local details editable.
       const incomingMap = new Map(incoming.map((g) => [g.id, g]));
       const hasNewImages = incoming.some((inc) => {
         const local = guests.find((g) => g.id === inc.id);
@@ -908,7 +910,7 @@ const GuestListScreen: React.FC<GuestListScreenProps> = ({
       );
     });
     if (hasNewImages) setGuests(incoming);
-  }, [initialGuests, guests, isBookingInfoCompleted, isReadOnly, allowIncomingImages]);
+  }, [initialGuests, guests, isBookingInfoCompleted, isReadOnly]);
 
   // pendingConsentLogs persistence
   useEffect(() => {
@@ -985,6 +987,20 @@ const handleUpdateGuestDetails = (guestId: string, details: Guest["details"]) =>
         if (!bid && !token) return;
 
         if (!isBookingInfoCompleted) {
+          const incomingForRoom = bookingRoomIdUsed
+            ? initialGuests.filter((g) => {
+                const v = toNumberOrUndef((g as any).bookingRoomId ?? (g as any).booking_room_id);
+                return v === bookingRoomIdUsed;
+              })
+            : initialGuests;
+          const hasIncomingImages = incomingForRoom.some(
+            (g) => !!g.faceImage || !!g.documentImage
+          );
+          if (hasIncomingImages) {
+            setGuests(normalizeGuestsForDisplay(incomingForRoom));
+            setSeededForPending(true);
+            return;
+          }
           if (!seededForPending) {
             const mainGuestName = getMainGuestNameFromBooking(bookingDetail);
             const base = [
@@ -1345,14 +1361,8 @@ const handleConfirmDeleteSelected = async () => {
                       : [...prev, guest.id]
                   );
                 }}
-                onTakePhoto={() => {
-                  setAllowIncomingImages(true);
-                  onTakePhoto(guest.id);
-                }}
-                onCaptureDocument={() => {
-                  setAllowIncomingImages(true);
-                  onCaptureDocument(guest.id);
-                }}
+                onTakePhoto={() => onTakePhoto(guest.id)}
+                onCaptureDocument={() => onCaptureDocument(guest.id)}
                 onUpdateDetails={(details) => handleUpdateGuestDetails(guest.id, details)}
                 isReadOnly={isReadOnly}
               />
