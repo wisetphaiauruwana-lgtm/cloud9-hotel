@@ -687,7 +687,7 @@ const GuestListScreen: React.FC<GuestListScreenProps> = ({
     String(bookingInfoStatus ?? '').toLowerCase() === 'completed';
   const shouldShowImages = !isReadOnly || isBookingInfoCompleted;
 
-  // ✅ FIX: bookingId เปลี่ยน -> reset state กันของเก่าค้าง
+  // ✅ FIX: เปลี่ยน bookingId/room/token -> reset state กันของเก่าค้าง
   useEffect(() => {
     fetchedRef.current = false;
     setGuests([]);
@@ -695,7 +695,7 @@ const GuestListScreen: React.FC<GuestListScreenProps> = ({
     setLoading(false);
     setIsEditing(false);
     setSelectedGuestIds([]);
-  }, [effectiveBookingId, isReadOnly, location.key]);
+  }, [effectiveBookingId, bookingRoomIdUsed, tokenUsed, isReadOnly, location.key]);
 
   useEffect(() => {
     if (!effectiveBookingId) return;
@@ -855,7 +855,13 @@ const GuestListScreen: React.FC<GuestListScreenProps> = ({
   // Sync guest list when parent updates (e.g., Add Guest / capture image)
   useEffect(() => {
     if (isReadOnly) return;
-    const incoming = normalizeGuestsForDisplay(initialGuests);
+    const filteredIncoming = bookingRoomIdUsed
+      ? initialGuests.filter((g) => {
+          const v = toNumberOrUndef((g as any).bookingRoomId ?? (g as any).booking_room_id);
+          return v === bookingRoomIdUsed;
+        })
+      : initialGuests;
+    const incoming = normalizeGuestsForDisplay(filteredIncoming);
 
     if (!isBookingInfoCompleted) {
       const incomingIds = incoming.map(g => g.id).join('|');
@@ -987,11 +993,17 @@ const handleUpdateGuestDetails = (guestId: string, details: Guest["details"]) =>
         if (!bid && !token) return;
 
         if (!isBookingInfoCompleted) {
-          const hasIncomingImages = initialGuests.some(
+          const incomingForRoom = bookingRoomIdUsed
+            ? initialGuests.filter((g) => {
+                const v = toNumberOrUndef((g as any).bookingRoomId ?? (g as any).booking_room_id);
+                return v === bookingRoomIdUsed;
+              })
+            : initialGuests;
+          const hasIncomingImages = incomingForRoom.some(
             (g) => !!g.faceImage || !!g.documentImage
           );
           if (hasIncomingImages) {
-            setGuests(normalizeGuestsForDisplay(initialGuests));
+            setGuests(normalizeGuestsForDisplay(incomingForRoom));
             setSeededForPending(true);
             return;
           }
