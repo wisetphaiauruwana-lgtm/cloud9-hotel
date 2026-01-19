@@ -4,7 +4,7 @@ export const CloudIcon = ({ className = 'w-6 h-6' }: { className?: string }) => 
   <img
     src="/cloud9-logo.png"
     alt="cloud9 logo"
-    className={`${className} object-contain`}
+    className={`${className} object-contain w-28 h-28`}
   />
 );
 
