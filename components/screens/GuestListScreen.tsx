@@ -1234,10 +1234,16 @@ const handleUpdateGuestDetails = (guestId: string, details: Guest["details"]) =>
   const displayGuests = useMemo(() => {
     let normalized = normalizeGuestsForDisplay(guests);
     if (isReadOnly && bookingRoomIdUsed) {
-      normalized = normalized.filter((g) => {
+      const hasRoomTag = normalized.some((g) => {
         const v = toNumberOrUndef((g as any).bookingRoomId ?? (g as any).booking_room_id);
-        return v === bookingRoomIdUsed;
+        return v !== undefined;
       });
+      if (hasRoomTag) {
+        normalized = normalized.filter((g) => {
+          const v = toNumberOrUndef((g as any).bookingRoomId ?? (g as any).booking_room_id);
+          return v === bookingRoomIdUsed;
+        });
+      }
     }
     if (!isReadOnly) return normalized; // ถ้าไม่เป็น read-only ก็แสดงข้อมูลทั้งหมด
 
