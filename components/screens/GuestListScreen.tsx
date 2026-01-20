@@ -1260,6 +1260,7 @@ const handleUpdateGuestDetails = (guestId: string, details: Guest["details"]) =>
       }
     }
 
+    if (isReadOnly) return aligned; // โหมดดูอย่างเดียวให้โชว์จาก DB ตามจริง
     return aligned.filter(isMeaningfulGuest); // กรองข้อมูลที่มีการกรอกจริง
   }, [guests, isReadOnly, bookingDetail, bookingRoomIdUsed]);
 
