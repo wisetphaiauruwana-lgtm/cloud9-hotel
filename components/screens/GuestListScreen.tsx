@@ -1026,10 +1026,16 @@ const handleUpdateGuestDetails = (guestId: string, details: Guest["details"]) =>
 
           let backendMapped = mapApiGuestsToUi(resp); // แปลงข้อมูลจาก API
           if (bookingRoomIdUsed) {
-            backendMapped = backendMapped.filter((g: any) => {
+            const hasRoomTag = backendMapped.some((g: any) => {
               const v = toNumberOrUndef((g as any).bookingRoomId ?? (g as any).booking_room_id);
-              return v === bookingRoomIdUsed;
+              return v !== undefined;
             });
+            if (hasRoomTag) {
+              backendMapped = backendMapped.filter((g: any) => {
+                const v = toNumberOrUndef((g as any).bookingRoomId ?? (g as any).booking_room_id);
+                return v === bookingRoomIdUsed;
+              });
+            }
           }
           if (isReadOnly) {
             setGuests(normalizeGuestsForDisplay(backendMapped)); // แสดงผลข้อมูลจาก backend เท่านั้น
@@ -1060,10 +1066,16 @@ const handleUpdateGuestDetails = (guestId: string, details: Guest["details"]) =>
 
           let backendMapped = mapApiGuestsToUi(resp);
           if (bookingRoomIdUsed) {
-            backendMapped = backendMapped.filter((g: any) => {
+            const hasRoomTag = backendMapped.some((g: any) => {
               const v = toNumberOrUndef((g as any).bookingRoomId ?? (g as any).booking_room_id);
-              return v === bookingRoomIdUsed;
+              return v !== undefined;
             });
+            if (hasRoomTag) {
+              backendMapped = backendMapped.filter((g: any) => {
+                const v = toNumberOrUndef((g as any).bookingRoomId ?? (g as any).booking_room_id);
+                return v === bookingRoomIdUsed;
+              });
+            }
           }
           if (isReadOnly) {
             setGuests(normalizeGuestsForDisplay(backendMapped)); // แสดงผลข้อมูลจาก backend เท่านั้น
