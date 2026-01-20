@@ -1026,10 +1026,17 @@ const handleUpdateGuestDetails = (guestId: string, details: Guest["details"]) =>
 
           let backendMapped = mapApiGuestsToUi(resp); // แปลงข้อมูลจาก API
           if (bookingRoomIdUsed) {
-            backendMapped = backendMapped.filter((g: any) => {
+            const hasRoomTag = backendMapped.some((g: any) => {
               const v = toNumberOrUndef((g as any).bookingRoomId ?? (g as any).booking_room_id);
-              return v === bookingRoomIdUsed;
+              return v !== undefined;
             });
+            if (hasRoomTag) {
+              const filtered = backendMapped.filter((g: any) => {
+                const v = toNumberOrUndef((g as any).bookingRoomId ?? (g as any).booking_room_id);
+                return v === bookingRoomIdUsed;
+              });
+              if (filtered.length > 0) backendMapped = filtered;
+            }
           }
           if (isReadOnly) {
             setGuests(normalizeGuestsForDisplay(backendMapped)); // แสดงผลข้อมูลจาก backend เท่านั้น
@@ -1060,10 +1067,17 @@ const handleUpdateGuestDetails = (guestId: string, details: Guest["details"]) =>
 
           let backendMapped = mapApiGuestsToUi(resp);
           if (bookingRoomIdUsed) {
-            backendMapped = backendMapped.filter((g: any) => {
+            const hasRoomTag = backendMapped.some((g: any) => {
               const v = toNumberOrUndef((g as any).bookingRoomId ?? (g as any).booking_room_id);
-              return v === bookingRoomIdUsed;
+              return v !== undefined;
             });
+            if (hasRoomTag) {
+              const filtered = backendMapped.filter((g: any) => {
+                const v = toNumberOrUndef((g as any).bookingRoomId ?? (g as any).booking_room_id);
+                return v === bookingRoomIdUsed;
+              });
+              if (filtered.length > 0) backendMapped = filtered;
+            }
           }
           if (isReadOnly) {
             setGuests(normalizeGuestsForDisplay(backendMapped)); // แสดงผลข้อมูลจาก backend เท่านั้น
@@ -1239,10 +1253,11 @@ const handleUpdateGuestDetails = (guestId: string, details: Guest["details"]) =>
         return v !== undefined;
       });
       if (hasRoomTag) {
-        normalized = normalized.filter((g) => {
+        const filtered = normalized.filter((g) => {
           const v = toNumberOrUndef((g as any).bookingRoomId ?? (g as any).booking_room_id);
           return v === bookingRoomIdUsed;
         });
+        if (filtered.length > 0) normalized = filtered;
       }
     }
     if (!isReadOnly) return normalized; // ถ้าไม่เป็น read-only ก็แสดงข้อมูลทั้งหมด
