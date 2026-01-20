@@ -468,16 +468,18 @@ const PostCheckinDetailsScreen: React.FC<PostCheckinDetailsScreenProps> = ({
 
   const qrUrl = useMemo(() => {
     const bid = resolvedBookingId;
-    if (!bid) return '';
+    const tokenStr = token ?? localStorage.getItem('checkin_token');
+    if (!bid && !tokenStr) return '';
     if (typeof window === 'undefined') return '';
     const origin = window.location.origin;
     const path = window.location.pathname || '/';
     const roomId = resolvedBookingRoomId;
     const qs = new URLSearchParams();
-    qs.set('bookingId', String(bid));
+    if (tokenStr) qs.set('token', String(tokenStr));
+    if (bid) qs.set('bookingId', String(bid));
     if (roomId) qs.set('bookingRoomId', String(roomId));
     return `${origin}${path}?${qs.toString()}`;
-  }, [resolvedBookingId, resolvedBookingRoomId]);
+  }, [resolvedBookingId, resolvedBookingRoomId, token]);
 
   const actionBookingId = useMemo(() => {
     return (
