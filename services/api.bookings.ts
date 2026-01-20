@@ -397,14 +397,13 @@ export const getBookingDetails = async (): Promise<any> => {
 /* -------------------------------------------------------------------------- */
 // src/services/api.bookings.ts
 
-export const checkoutBooking = async (bookingId: number) => {
-  const res = await fetch(
-    `${ENDPOINTS.BOOKINGS}/${bookingId}/checkout`,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-    }
-  );
+export const checkoutBooking = async (bookingId: number, bookingRoomId?: number) => {
+  const base = `${ENDPOINTS.BOOKINGS}/${bookingId}`;
+  const url = bookingRoomId ? `${base}/rooms/${bookingRoomId}/checkout` : `${base}/checkout`;
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+  });
 
   if (!res.ok) {
     const text = await res.text();

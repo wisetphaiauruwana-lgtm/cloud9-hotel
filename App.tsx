@@ -981,7 +981,7 @@ const App: React.FC = () => {
     setError(null);
 
     try {
-      await checkoutBooking(booking.dbId);
+      await checkoutBooking(booking.dbId, checkinBookingRoomId ?? undefined);
       navigateTo(Screen.CheckoutSuccess);
     } catch {
       setError('Checkout ไม่สำเร็จ');
