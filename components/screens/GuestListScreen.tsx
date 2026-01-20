@@ -597,6 +597,7 @@ const getMainGuestNameFromBooking = (b: any) => {
 const isMeaningfulGuest = (g: Guest) => {
   if ((g.progress ?? 0) > 0) return true;  // ถ้า progress มากกว่า 0 ก็ถือว่ามีความหมาย
   if (g.faceImage || g.documentImage) return true;  // ถ้ามีรูปใบหน้า หรือ รูปเอกสาร
+  if (String(g.name ?? '').trim()) return true; // อย่างน้อยต้องมีชื่อให้แสดง
   const d: any = g.details || {};
   return (
     !!String(d.firstName ?? '').trim() ||
