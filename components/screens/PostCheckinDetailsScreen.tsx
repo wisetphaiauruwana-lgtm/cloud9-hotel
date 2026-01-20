@@ -472,8 +472,12 @@ const PostCheckinDetailsScreen: React.FC<PostCheckinDetailsScreenProps> = ({
     if (typeof window === 'undefined') return '';
     const origin = window.location.origin;
     const path = window.location.pathname || '/';
-    return `${origin}${path}?bookingId=${bid}`;
-  }, [resolvedBookingId]);
+    const roomId = resolvedBookingRoomId;
+    const qs = new URLSearchParams();
+    qs.set('bookingId', String(bid));
+    if (roomId) qs.set('bookingRoomId', String(roomId));
+    return `${origin}${path}?${qs.toString()}`;
+  }, [resolvedBookingId, resolvedBookingRoomId]);
 
   const actionBookingId = useMemo(() => {
     return (
