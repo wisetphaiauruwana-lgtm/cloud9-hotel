@@ -33,7 +33,7 @@
     "title": "ENTER YOUR CONFIRMATION CODE",
     "codeLabel": "Confirmation Code",
     "placeholder": "e.g., C12905721885",
-    "invalidFormat": "Please enter an 8-character code.",
+  "invalidFormat": "Please enter a 12-character code (1 letter + 11 digits).",
   "successMessage": "Code is valid! Loading reservation...",
   "invalidOrExpired": "Invalid or expired code.",
   "networkError": "Cannot connect to server. Please try again."

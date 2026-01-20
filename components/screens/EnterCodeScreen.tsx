@@ -41,7 +41,7 @@ const normalizeCode = (s: string) => {
 
 const formatDisplayCode = (raw: string) => {
   const n = normalizeCode(raw);
-  if (n.length === 8) return `${n.slice(0, 4)}-${n.slice(4)}`;
+  if (n.length === 12) return `${n.slice(0, 4)}-${n.slice(4, 8)}-${n.slice(8)}`;
   return raw;
 };
 
@@ -94,9 +94,9 @@ const EnterCodeScreen: React.FC<EnterCodeScreenProps> = ({ onSubmit, onBack, err
     setIsValid(null);
 
     const rawNorm = normalizeCode(code);
-    if (rawNorm.length !== 8) {
+    if (rawNorm.length !== 12) {
       setIsValid(false);
-      setMessage(t('enterCode.invalidFormat') || "กรุณากรอกรหัสให้ถูกต้อง (8 ตัวอักษร A-Z0-9)");
+      setMessage(t('enterCode.invalidFormat') || "กรุณากรอกรหัสให้ถูกต้อง (1 ตัวอักษร + 11 ตัวเลข)");
       return;
     }
 
@@ -207,9 +207,9 @@ const EnterCodeScreen: React.FC<EnterCodeScreenProps> = ({ onSubmit, onBack, err
                   setIsValid(null);
                   setMessage(null);
                 }}
-                placeholder={t('enterCode.placeholder') || "ABCD-EFGH"}
+                placeholder={t('enterCode.placeholder') || "A123-4567-8901"}
                 className={styles.input}
-                maxLength={12}
+                maxLength={14}
                 aria-label="confirmation-code"
               />
             </div>
