@@ -806,8 +806,6 @@ const GuestListScreen: React.FC<GuestListScreenProps> = ({
         return;
       }
 
-      if (isReadOnly) return;
-
       const token = tokenUsed ? String(tokenUsed).trim() : ''; // ตรวจสอบ tokenUsed
       if (!token) return;
 
