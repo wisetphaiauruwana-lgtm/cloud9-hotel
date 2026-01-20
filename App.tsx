@@ -519,34 +519,26 @@ const App: React.FC = () => {
         ...bk,
         dbId: bookingId,
       });
-      const guestsRaw = bookingId
-        ? await apiService.fetchGuests(bookingId).catch(() => [])
-        : [];
-
-        if (!guestsRaw || guestsRaw.length === 0) {
-        setGuests([
-          {
-            id: `guest_main_${Date.now()}`,
-            name:
-              (bk as any).mainGuestName ||
-              (bk as any).guestName ||
-              (bk as any).customerName ||
-              " ",
-            isMainGuest: true,
-            progress: 0,
-            documentType: DocumentType.IDCard,
-          } as Guest,
-        ]);
-      } else {
-        const uiGuests = guestsRaw.map((g: any, idx: number) =>
-          mapBackendGuestToUi(g, idx)
-        );
-        const safeGuests = uiGuests.map((g, idx) => ({
-          ...g,
-          name: String(g.name ?? "").trim() ? g.name : `Guest ${idx + 1}`,
-        }));
-        setGuests(safeGuests);
-      }
+      // ยังไม่เช็กอิน: ไม่ดึงข้อมูลเดิมมาแสดง ป้องกันข้อมูลข้าม Confirmation Code
+      const mainGuestName =
+        (bk as any).mainGuestName ||
+        (bk as any).guestName ||
+        (bk as any).customerName ||
+        " ";
+      const blankGuests: Guest[] = [
+        {
+          id: `guest_main_${Date.now()}`,
+          name: mainGuestName,
+          isMainGuest: true,
+          progress: 0,
+          documentType: DocumentType.IDCard,
+          details: {} as any,
+          faceImage: "",
+          documentImage: "",
+        } as Guest,
+      ];
+      setGuests(blankGuests);
+      if (bookingId) saveGuestCache(bookingId, blankGuests, checkinBookingRoomId);
 
       navigateTo(Screen.ReservationDetails);
     } catch (err) {
