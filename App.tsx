@@ -441,6 +441,12 @@ const App: React.FC = () => {
 
       // ✅ 3) เคส “เช็คอินแล้ว” จาก API
       if (bk?.__alreadyCheckedIn) {
+        const bookingRoomIdFromToken = extractBookingRoomId(bkResp) ?? extractBookingRoomId(bk);
+        if (bookingRoomIdFromToken) {
+          setCheckinBookingRoomId(bookingRoomIdFromToken);
+          try { localStorage.setItem(CHECKIN_BOOKING_ROOM_ID_KEY, String(bookingRoomIdFromToken)); } catch { }
+        }
+
         const safeBooking: Booking = {
           ...bk,
           dbId: extractBookingId(bk),
