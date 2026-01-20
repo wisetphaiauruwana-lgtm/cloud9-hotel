@@ -41,7 +41,7 @@ const normalizeCode = (s: string) => {
 
 const formatDisplayCode = (raw: string) => {
   const n = normalizeCode(raw);
-  if (n.length === 12) return `${n.slice(0, 4)}-${n.slice(4, 8)}-${n.slice(8)}`;
+  if (n.length === 12) return n;
   return raw;
 };
 
@@ -207,9 +207,9 @@ const EnterCodeScreen: React.FC<EnterCodeScreenProps> = ({ onSubmit, onBack, err
                   setIsValid(null);
                   setMessage(null);
                 }}
-                placeholder={t('enterCode.placeholder') || "A123-4567-8901"}
+                placeholder={t('enterCode.placeholder') || "A12345678901"}
                 className={styles.input}
-                maxLength={14}
+                maxLength={12}
                 aria-label="confirmation-code"
               />
             </div>
