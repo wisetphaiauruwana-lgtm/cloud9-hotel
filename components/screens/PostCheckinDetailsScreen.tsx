@@ -297,10 +297,22 @@ const PostCheckinDetailsScreen: React.FC<PostCheckinDetailsScreenProps> = ({
       try {
         const tokenStr = token ?? localStorage.getItem('checkin_token');
         if (!tokenStr) return;
-        const bkResp: any = await (apiService as any).getBookingByToken(tokenStr);
+        const roomIdFromStorage = toNumberOrUndef(localStorage.getItem(CHECKIN_BOOKING_ROOM_ID_KEY));
+        const bkResp: any = await (apiService as any).getBookingByToken(
+          tokenStr,
+          roomIdFromStorage
+        );
         const bk: any = unwrapBooking(bkResp);
         if (!mounted) return;
         setLiveBooking(bk);
+        const roomId =
+          toNumberOrUndef(bk?.bookingRoomId) ??
+          toNumberOrUndef(bk?.booking_room_id) ??
+          toNumberOrUndef(bkResp?.bookingRoomId) ??
+          toNumberOrUndef(bkResp?.booking_room_id);
+        if (roomId) {
+          try { localStorage.setItem(CHECKIN_BOOKING_ROOM_ID_KEY, String(roomId)); } catch { }
+        }
       } catch {
       }
     };
