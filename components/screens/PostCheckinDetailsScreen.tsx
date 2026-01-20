@@ -395,9 +395,22 @@ const PostCheckinDetailsScreen: React.FC<PostCheckinDetailsScreenProps> = ({
   // Extract Main Guest from guest list
   // ✅ FIX: รองรับทั้ง details camelCase และ snake_case
   // --------------------
+  const displayGuestList = useMemo(() => {
+    if (!resolvedBookingRoomId) return guestList;
+    const hasRoomTag = (guestList || []).some((g: any) => {
+      const v = toNumberOrUndef(g?.bookingRoomId ?? g?.booking_room_id);
+      return v !== undefined;
+    });
+    if (!hasRoomTag) return guestList;
+    return (guestList || []).filter((g: any) => {
+      const v = toNumberOrUndef(g?.bookingRoomId ?? g?.booking_room_id);
+      return v === resolvedBookingRoomId;
+    });
+  }, [guestList, resolvedBookingRoomId]);
+
   const mainGuestFromGuests = useMemo(() => {
-    return getMainGuestNameFromList(guestList);
-  }, [guestList]);
+    return getMainGuestNameFromList(displayGuestList);
+  }, [displayGuestList]);
 
   const mainGuestFromCache = useMemo(() => {
     if (!resolvedBookingId) return '';
