@@ -100,10 +100,6 @@ export interface Booking {
   customerName?: string;
   customerEmail?: string;
 
-  // Check-in status helpers
-  checkinCompleted?: boolean;
-  __alreadyCheckedIn?: boolean;
-
   guests?: {
     adults: number;
     children: number;

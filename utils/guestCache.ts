@@ -141,6 +141,11 @@ const score = (g: Guest) => {
   const gender = String(g.details?.gender ?? "").trim();
   const dob = String(g.details?.dateOfBirth ?? "").trim();
   const addr = String((g.details as any)?.currentAddress ?? "").trim();
+  const doa = String((g.details as any)?.dateOfArrival ?? "").trim();
+  const visa = String((g.details as any)?.visaType ?? "").trim();
+  const stayExp = String((g.details as any)?.stayExpiryDate ?? "").trim();
+  const poe = String((g.details as any)?.pointOfEntry ?? "").trim();
+  const tm = String((g.details as any)?.tmCardNumber ?? "").trim();
 
   const hasFace = g.faceImage ? 1 : 0;
   const hasDocImg = g.documentImage ? 1 : 0;
@@ -153,6 +158,11 @@ const score = (g: Guest) => {
     (nat ? 1 : 0) +
     (gender ? 1 : 0) +
     (addr ? 1 : 0) +
+    (doa ? 1 : 0) +
+    (visa ? 1 : 0) +
+    (stayExp ? 1 : 0) +
+    (poe ? 1 : 0) +
+    (tm ? 1 : 0) +
     hasFace +
     hasDocImg +
     (g.progress ?? 0)
