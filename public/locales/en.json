@@ -11,14 +11,15 @@
     "startCheckin": "START CHECK-IN",
     "submit": "SUBMIT",
     "confirm": "CONFIRM",
+    "deleting": "DELETING...",
     "addGuest": "+ ADD GUEST",
     "deleteSelectedGuests": "DELETE SELECTED GUEST(S)",
     "edit": "Edit",
     "done": "Done",
     "capture": "CAPTURE",
     "retake": "RETAKE",
-    "finish": "FINISH",
-    "confirmCheckout": "CONFIRM CHECK-OUT",
+    "finish": "CONFIRM",
+    "confirmCheckout": "CONFIRM",
     "checkout": "CHECK OUT",
     "cancel": "CANCEL",
     "backToHome": "BACK TO HOME",
@@ -32,7 +33,7 @@
   "enterCode": {
     "title": "ENTER YOUR CONFIRMATION CODE",
     "codeLabel": "Confirmation Code",
-    "placeholder": "e.g., C12905721885",
+    "placeholder": "Enter Confirmation Code",
   "invalidFormat": "Please enter a 12-character code (1 letter + 11 digits).",
   "successMessage": "Code is valid! Loading reservation...",
   "invalidOrExpired": "Invalid or expired code.",
@@ -40,7 +41,7 @@
 }
 ,
 "reservationDetails": {
-  "title": "Reservation Details",
+  "title": "RESERVATION DETAILS",
   "mainGuest": "Main Guest",
   "email": "Email",
   "numGuests": "Number of Guests",
@@ -107,6 +108,7 @@
     "captureDocument": "Capture Verification Document",
     "verifiedImage": "Verified Image",
     "verifiedDocument": "Verified Document",
+    "name": "Name",
     "firstName": "First Name",
     "lastName": "Last Name",
     "idNumber": "ID Number",
@@ -121,7 +123,7 @@
     "pointOfEntry": "Point of entry",
     "tmCardNumber": "Arrival card TM.No.",
     "footerText": "You can add up to 5 guests per room. Please ensure all guest details are accurate.",
-"deleteSelected": "DELETE SELECTED",
+"deleteSelected": "DELETE SELECTED GUEST(S)",
   "deleteTitle": "REMOVE GUEST?",
   "deleteMessage": "Are you sure you want to remove the selected guest(s) from the guest details?",
   "deleteWarning": "This action cannot be undone.",
@@ -130,7 +132,7 @@
   },
   "faceCapture": {
     "title": "Position Your Face in the Frame for Verification",
-    "success": "Face Successfully Captured!",
+    "success": "Face Successfully Captured! Proceed to the Next Step.",
     "saved": "Saved!"
   },
   "documentType": {
@@ -142,6 +144,8 @@
   },
   "documentCapture": {
     "title": "Align Your Document in the Frame for Verification",
+    "promptID": "Align Your Document\nin the Frame for Verification.",
+    "promptPassport": "Align Your Document\nin the Frame for Verification.",
     "success": "Document Verified. Continue to Check In.",
     "analyzing": "Analyzing Document...",
     "analyzingSubtitle": "This may take a moment."
@@ -182,8 +186,8 @@
     "title": "ROOM ACCESS INFORMATION"
   },
   "checkout": {
-    "title": "CONFIRM CHECK-OUT",
-    "warning": "Are you sure you want to check out now? Once confirmed, your stay will be officially completed."
+    "title": "CONFIRM CHECK-OUT?",
+    "warning": "If you confirm to check out, your room access code will be deactivated, and you will no longer be able to enter the room. Please ensure you have all your belongings before proceeding."
   },
   "checkoutSuccess": {
     "title": "Check-out Complete",

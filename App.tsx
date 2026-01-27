@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo, useEffect } from 'react';
+import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import { Screen, Booking, Guest, DocumentType, ExtractedData } from './types';
 
 import { useTranslation } from './hooks/useTranslation';
@@ -107,6 +107,11 @@ const mapBackendGuestToUi = (g: any, idx: number): Guest => {
       dateOfBirth: g.details?.dateOfBirth ?? g.date_of_birth ?? g.dateOfBirth ?? '',
       documentNumber: g.details?.documentNumber ?? g.id_number ?? g.documentNumber ?? '',
       currentAddress: g.details?.currentAddress ?? g.current_address ?? g.currentAddress ?? '',
+      dateOfArrival: g.details?.dateOfArrival ?? g.date_of_arrival ?? g.dateOfArrival ?? '',
+      visaType: g.details?.visaType ?? g.visa_type ?? g.visaType ?? '',
+      stayExpiryDate: g.details?.stayExpiryDate ?? g.stay_expiry_date ?? g.stayExpiryDate ?? '',
+      pointOfEntry: g.details?.pointOfEntry ?? g.point_of_entry ?? g.pointOfEntry ?? '',
+      tmCardNumber: g.details?.tmCardNumber ?? g.tm_card_number ?? g.tmCardNumber ?? '',
     },
     faceImage,
     documentImage,
@@ -144,6 +149,11 @@ const normalizeGuestsForDisplay = (list: Guest[]) => {
     const gender = String(g.details?.gender ?? '').trim();
     const dob = String(g.details?.dateOfBirth ?? '').trim();
     const addr = String((g.details as any)?.currentAddress ?? '').trim();
+    const doa = String((g.details as any)?.dateOfArrival ?? '').trim();
+    const visa = String((g.details as any)?.visaType ?? '').trim();
+    const stayExp = String((g.details as any)?.stayExpiryDate ?? '').trim();
+    const poe = String((g.details as any)?.pointOfEntry ?? '').trim();
+    const tm = String((g.details as any)?.tmCardNumber ?? '').trim();
 
     const hasFace = g.faceImage ? 1 : 0;
     const hasDocImg = g.documentImage ? 1 : 0;
@@ -156,6 +166,11 @@ const normalizeGuestsForDisplay = (list: Guest[]) => {
       (nat ? 1 : 0) +
       (gender ? 1 : 0) +
       (addr ? 1 : 0) +
+      (doa ? 1 : 0) +
+      (visa ? 1 : 0) +
+      (stayExp ? 1 : 0) +
+      (poe ? 1 : 0) +
+      (tm ? 1 : 0) +
       hasFace +
       hasDocImg +
       (g.progress ?? 0) // ใช้ progress ช่วยตัดสิน
@@ -235,10 +250,50 @@ const isCheckedInBooking = (b: any): boolean => {
   return false;
 };
 
+const buildSafeBookingFromCache = (cached: any): Booking => ({
+  ...cached,
+  dbId: extractBookingId(cached),
+  mainGuest:
+    cached?.mainGuest ??
+    cached?.mainGuestName ??
+    cached?.guestName ??
+    cached?.customerName ??
+    cached?.guestLastName ??
+    cached?.main_guest?.full_name ??
+    cached?.main_guest?.name ??
+    cached?.customer?.full_name ??
+    cached?.customer?.name ??
+    "",
+  email:
+    cached?.email ??
+    cached?.guestEmail ??
+    cached?.guest_email ??
+    cached?.customerEmail ??
+    cached?.customer_email ??
+    cached?.main_guest?.email ??
+    cached?.customer?.email ??
+    cached?.guest?.email ??
+    "",
+  guests: cached?.guests ?? { adults: 0, children: 0 },
+  rooms: Array.isArray(cached?.rooms) ? cached.rooms : [],
+  stay: cached?.stay ?? {
+    from: cached?.checkIn ?? cached?.check_in ?? "",
+    to: cached?.checkOut ?? cached?.check_out ?? "",
+  },
+});
+
 const App: React.FC = () => {
   const SCREEN_STORAGE_KEY = "current_screen";
   const [screen, setScreen] = useState<Screen>(() => {
     try {
+      const rawCheckedIn = localStorage.getItem("checkedin_booking");
+      if (rawCheckedIn) {
+        const cached = JSON.parse(rawCheckedIn);
+        if (isCheckedInBooking(cached) && !isCheckedOutBooking(cached)) {
+          return Screen.PostCheckinDetails;
+        }
+      }
+
       const stored = localStorage.getItem(SCREEN_STORAGE_KEY) as Screen | null;
       if (stored && Object.values(Screen).includes(stored)) {
         if (
@@ -247,6 +302,18 @@ const App: React.FC = () => {
           stored === Screen.PrivacyPolicy
         ) {
           return Screen.ReservationDetails;
+        }
+        if (stored === Screen.PostCheckinDetails) {
+          const rawCheckedIn = localStorage.getItem("checkedin_booking");
+          if (!rawCheckedIn) return Screen.Welcome;
+          try {
+            const cached = JSON.parse(rawCheckedIn);
+            if (!isCheckedInBooking(cached) || isCheckedOutBooking(cached)) {
+              return Screen.Welcome;
+            }
+          } catch {
+            return Screen.Welcome;
+          }
         }
         return stored;
       }
@@ -265,6 +332,7 @@ const App: React.FC = () => {
   const [checkinToken, setCheckinToken] = useState<string | null>(null);
   const [allowReservationFromToken, setAllowReservationFromToken] = useState(false);
   const [guestListBookingId, setGuestListBookingId] = useState<number | null>(null);
+  const [hasRestoredCheckin, setHasRestoredCheckin] = useState(false);
   const CHECKIN_BOOKING_ID_KEY = "checkin_booking_id";
   const CHECKIN_BOOKING_ROOM_ID_KEY = "checkin_booking_room_id";
   const [checkinBookingRoomId, setCheckinBookingRoomId] = useState<number | null>(() => {
@@ -278,11 +346,27 @@ const App: React.FC = () => {
   });
 
   const { t } = useTranslation();
+  const hasAutoRestoredFromTokenRef = useRef(false);
 
   const navigateTo = useCallback((newScreen: Screen) => {
     setError(null);
     setScreen(newScreen);
   }, []);
+
+  const clearCheckinCache = () => {
+    setCheckinToken(null);
+    setCheckinBookingRoomId(null);
+    setGuestListBookingId(null);
+    try {
+      localStorage.removeItem("checkin_token");
+      localStorage.removeItem("checkedin_booking");
+      localStorage.removeItem(CHECKIN_BOOKING_ID_KEY);
+      localStorage.removeItem(CHECKIN_BOOKING_ROOM_ID_KEY);
+      localStorage.removeItem(SCREEN_STORAGE_KEY);
+    } catch {
+      // ignore storage errors
+    }
+  };
 
   useEffect(() => {
     try {
@@ -291,6 +375,73 @@ const App: React.FC = () => {
       // ignore storage errors
     }
   }, [screen]);
+
+  useEffect(() => {
+    try {
+      const q = new URLSearchParams(window.location.search);
+      const tokenFromUrl = q.get('token');
+      const bookingIdFromUrl = q.get('bookingId');
+      if (tokenFromUrl || bookingIdFromUrl) return;
+
+      const raw = localStorage.getItem("checkedin_booking");
+      if (raw) {
+        const cached = JSON.parse(raw);
+        if (!isCheckedInBooking(cached) || isCheckedOutBooking(cached)) return;
+
+        const safeBooking = buildSafeBookingFromCache(cached);
+
+        setBooking(safeBooking);
+        setIsGuestListReadOnly(true);
+        setAllowReservationFromToken(true);
+
+        const storedToken =
+          localStorage.getItem("checkin_token") ||
+          cached?.token ||
+          cached?.checkin_token ||
+          null;
+        if (storedToken) setCheckinToken(String(storedToken));
+
+        const bid = extractBookingId(safeBooking);
+        if (bid) {
+          setGuestListBookingId(bid);
+          try { localStorage.setItem(CHECKIN_BOOKING_ID_KEY, String(bid)); } catch { }
+        }
+
+        navigateTo(Screen.PostCheckinDetails);
+        return;
+      }
+
+      const storedToken = localStorage.getItem("checkin_token");
+      if (storedToken) {
+        const rawCheckedIn = localStorage.getItem("checkedin_booking");
+        if (rawCheckedIn) {
+          const cached = JSON.parse(rawCheckedIn);
+          if (isCheckedInBooking(cached) && !isCheckedOutBooking(cached)) {
+            setAllowReservationFromToken(true);
+            setCheckinToken(String(storedToken));
+            navigateTo(Screen.PostCheckinDetails);
+          }
+        }
+      }
+    } catch {
+      // ignore
+    } finally {
+      setHasRestoredCheckin(true);
+    }
+  }, [navigateTo]);
+
+  useEffect(() => {
+    if (!hasRestoredCheckin) return;
+    if (hasAutoRestoredFromTokenRef.current) return;
+    if (screen !== Screen.PostCheckinDetails) return;
+    const q = new URLSearchParams(window.location.search);
+    if (q.get('token') || q.get('bookingId')) return;
+    const storedToken = localStorage.getItem("checkin_token");
+    if (!storedToken) return;
+    hasAutoRestoredFromTokenRef.current = true;
+    handleCodeSubmit(storedToken);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hasRestoredCheckin, screen]);
 
   // handle code/token submission -> load booking + guests
   const handleCodeSubmit = async (token: string) => {
@@ -431,10 +582,7 @@ const App: React.FC = () => {
 
       if (isCheckedOutBooking(bk)) {
         setError(t('enterCode.checkedOut') ?? 'เช็กเอ้าแล้ว');
-        setBooking(null);
-        setGuests([]);
-        setIsGuestListReadOnly(false);
-        setAllowReservationFromToken(false);
+        clearCheckinCache();
         navigateTo(Screen.EnterCode);
         return;
       }
@@ -549,6 +697,7 @@ const App: React.FC = () => {
       navigateTo(Screen.ReservationDetails);
     } catch (err) {
       console.error("❌ handleCodeSubmit error =", err);
+      clearCheckinCache();
       const errCode = (err as any)?.code ?? '';
       const errMsg = String((err as any)?.message ?? '');
       if (
@@ -604,10 +753,7 @@ const App: React.FC = () => {
 
               if (isCheckedOutBooking(bk)) {
                 setError(t('enterCode.checkedOut') ?? 'เช็กเอ้าแล้ว');
-                setBooking(null);
-                setGuests([]);
-                setIsGuestListReadOnly(false);
-                setAllowReservationFromToken(false);
+                clearCheckinCache();
                 navigateTo(Screen.EnterCode);
                 return;
               }
@@ -650,6 +796,9 @@ const App: React.FC = () => {
 
   useEffect(() => {
     if (screen !== Screen.PostCheckinDetails) return;
+    if (!hasRestoredCheckin) return;
+    const token = checkinToken ?? localStorage.getItem("checkin_token");
+    if (token) return;
     if (!booking) {
       navigateTo(Screen.ReservationDetails);
       return;
@@ -657,12 +806,22 @@ const App: React.FC = () => {
     if (!isCheckedInBooking(booking)) {
       navigateTo(Screen.ReservationDetails);
     }
-  }, [screen, booking, navigateTo]);
+  }, [screen, booking, navigateTo, checkinToken, hasRestoredCheckin]);
 
   useEffect(() => {
+    if (!hasRestoredCheckin) return;
+    const token = checkinToken ?? localStorage.getItem("checkin_token");
+    if (!token) return;
+    if (screen === Screen.ReservationDetails && booking && isCheckedInBooking(booking) && !isCheckedOutBooking(booking)) {
+      navigateTo(Screen.PostCheckinDetails);
+    }
+  }, [screen, checkinToken, hasRestoredCheckin, navigateTo, booking]);
+
+  useEffect(() => {
+    if (!hasRestoredCheckin) return;
     const bookingId =
       extractBookingId(booking) ??
-      (guestListBookingId ?? undefined) ??
+      guestListBookingId ??
       (() => {
         try {
           const raw = localStorage.getItem(CHECKIN_BOOKING_ID_KEY);
@@ -690,7 +849,7 @@ const App: React.FC = () => {
     if (needsBooking && !bookingId && !token) {
       setScreen(Screen.EnterCode);
     }
-  }, [screen, booking, guestListBookingId, checkinToken]);
+  }, [screen, booking, guestListBookingId, checkinToken, hasRestoredCheckin]);
 
   // --- DEV: preview mode ---
   useEffect(() => {
@@ -931,6 +1090,8 @@ const App: React.FC = () => {
             ...prevB,
             ...updatedBooking,
             dbId: bookingId,
+            checkinCompleted: true,
+            __alreadyCheckedIn: true,
 
           // ✅ ถ้า updated ไม่มี email/mainGuest ให้ใช้ของเดิม
           email:
@@ -959,9 +1120,16 @@ const App: React.FC = () => {
         return merged;
       });
     } else {
-      setBooking(prev => (prev ? { ...prev, dbId: bookingId } : prev));
+      const fallback = {
+        ...(booking ?? {}),
+        dbId: bookingId,
+        checkinCompleted: true,
+        __alreadyCheckedIn: true,
+      } as Booking;
+      setBooking(prev => (prev ? fallback : prev));
       try {
         if (bookingId) localStorage.setItem(CHECKIN_BOOKING_ID_KEY, String(bookingId));
+        localStorage.setItem("checkedin_booking", JSON.stringify(fallback));
       } catch { }
     }
 
@@ -1164,6 +1332,7 @@ const App: React.FC = () => {
         return (
           <GuestListScreen
             guests={guests}
+            booking={booking ?? undefined}
             token={checkinToken}
             bookingId={guestListBookingId ?? booking?.dbId ?? booking?.id ?? (booking as any)?.bookingId}
             bookingRoomId={checkinBookingRoomId}

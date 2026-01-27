@@ -6,6 +6,7 @@ import Header from '../layout/Header';
 import Button from '../ui/Button';
 import { ChevronDownIcon, ChevronUpIcon, CloudIcon, EditIcon } from '../icons/Icons';
 import { useTranslation } from '../../hooks/useTranslation';
+import { useLanguage } from '../../context/LanguageContext';
 import { useLocation } from 'react-router-dom';
 import { apiService } from '../../services/apiService';
 import {
@@ -66,10 +67,12 @@ const guestListItemStyles = {
   progressIncomplete: "text-red-500",
   content: "px-4 md:px-5 lg:px-6 pt-5 pb-6",
   verifiedContainer: "pt-4 space-y-5",
-  imageGrid: "grid grid-cols-2 gap-4 md:gap-6 lg:gap-8 items-start",
+  imageGrid: "flex flex-col gap-4 md:gap-6 lg:gap-8 items-start",
   imageLabel: "text-sm md:text-base font-semibold text-gray-700 mb-1",
-  verifiedImage: "rounded-lg w-full object-cover shadow-sm border border-gray-200",
-  verifiedDocument: "rounded-lg w-full object-contain shadow-sm border border-gray-200",
+  verifiedImage: "rounded-lg w-[220px] md:w-[260px] lg:w-[300px] h-auto object-cover shadow-sm border border-gray-200",
+  verifiedDocument: "rounded-lg w-[220px] md:w-[260px] lg:w-[300px] h-auto object-contain shadow-sm border border-gray-200",
+  detailLabel: "text-sm md:text-base font-semibold text-gray-700",
+  detailValue: "text-base md:text-lg text-gray-900 break-words",
   detailsContainer: "space-y-3 pt-2",
   actionsContainer: "space-y-6 pt-2",
   actionRow: "flex flex-col items-start gap-3",
@@ -91,6 +94,9 @@ interface GuestListItemProps {
   isSelected: boolean;
   onSelectToggle: () => void;
   onUpdateDetails: (details: Guest['details']) => void;
+  mainGuestEmail?: string;
+  stayFrom?: string;
+  stayTo?: string;
 }
 
 const GuestListItem: React.FC<GuestListItemProps> = ({
@@ -103,12 +109,20 @@ const GuestListItem: React.FC<GuestListItemProps> = ({
   isSelected,
   onSelectToggle,
   onUpdateDetails,
+  mainGuestEmail,
+  stayFrom,
+  stayTo,
 }) => {
   const [isOpen, setIsOpen] = useState(!!guest.isMainGuest);
   const [details, setDetails] = useState(guest.details);
   const { t } = useTranslation();
 
-  const displayDOB = details?.dateOfBirth ? String(details.dateOfBirth).split('T')[0] : '';
+  const formatDateOnly = (value?: string) => {
+    const v = String(value ?? '').trim();
+    if (!v) return '';
+    return v.includes('T') ? v.split('T')[0] : v;
+  };
+  const displayDOB = formatDateOnly(details?.dateOfBirth);
   const isFilled = (v: any) => String(v ?? '').trim() !== '';
 
   const toImageSrc = (value?: string) => {
@@ -212,6 +226,7 @@ const GuestListItem: React.FC<GuestListItemProps> = ({
           readOnly={isReadOnly}
         />
       )}
+
     </>
   );
 
@@ -285,6 +300,27 @@ const GuestListItem: React.FC<GuestListItemProps> = ({
               )}
               <div className={guestListItemStyles.detailsContainer}>
                 {renderDetailsFields()}
+                {guest.isMainGuest && (
+                  <div className="space-y-3">
+                    <div>
+                      <div className={guestListItemStyles.detailLabel}>
+                        {t('reservationDetails.email') || 'Email'}
+                      </div>
+                      <div className={guestListItemStyles.detailValue}>
+                        {mainGuestEmail || '-'}
+                      </div>
+                    </div>
+                    <div>
+                      <div className={guestListItemStyles.detailLabel}>
+                        {t('reservationDetails.stayDuration') || 'Stay Duration:'}
+                      </div>
+                      <div className={guestListItemStyles.detailValue}>
+                        <div>{`${t('reservationDetails.from') || 'From'} ${stayFrom || '-'}`}</div>
+                        <div>{`${t('reservationDetails.to') || 'To'} ${stayTo || '-'}`}</div>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           ) : !hasFaceImage ? (
@@ -364,6 +400,27 @@ const GuestListItem: React.FC<GuestListItemProps> = ({
 
               <div className={guestListItemStyles.detailsContainer}>
                 {renderDetailsFields()}
+                {guest.isMainGuest && (
+                  <div className="space-y-3">
+                    <div>
+                      <div className={guestListItemStyles.detailLabel}>
+                        {t('reservationDetails.email') || 'Email'}
+                      </div>
+                      <div className={guestListItemStyles.detailValue}>
+                        {mainGuestEmail || '-'}
+                      </div>
+                    </div>
+                    <div>
+                      <div className={guestListItemStyles.detailLabel}>
+                        {t('reservationDetails.stayDuration') || 'Stay Duration:'}
+                      </div>
+                      <div className={guestListItemStyles.detailValue}>
+                        <div>{`${t('reservationDetails.from') || 'From'} ${stayFrom || '-'}`}</div>
+                        <div>{`${t('reservationDetails.to') || 'To'} ${stayTo || '-'}`}</div>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -384,12 +441,13 @@ const guestListScreenStyles = {
   footer: "p-6 md:p-8 lg:p-10 text-center space-y-4",
   footerText: "text-sm md:text-base lg:text-lg text-gray-500",
   poweredByContainer: "pt-4 flex items-center justify-center space-x-1 text-gray-400 text-sm md:text-base lg:text-lg",
-  poweredByIcon: "w-12 h-12 text-black",
+  poweredByIcon: "h-4 md:h-5 lg:h-6 w-auto text-black",
 };
 
 /* ---------------- types / helpers ---------------- */
 interface GuestListScreenProps {
   guests?: Guest[];
+  booking?: Booking;
   token?: string | null;
   bookingId?: number | string;
   bookingRoomId?: number | string;
@@ -480,6 +538,66 @@ const readBookingRoomIdFromStorage = () => {
   }
 };
 
+const parseDate = (v?: string | null): Date | null => {
+  if (!v) return null;
+  const d = new Date(String(v));
+  return Number.isNaN(d.getTime()) ? null : d;
+};
+
+const formatDateTime = (v?: string | null): string => {
+  const d = parseDate(v);
+  if (!d) return String(v ?? '') || '';
+  const pad = (n: number) => n.toString().padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+};
+
+const getBookingEmail = (b: any): string => {
+  const raw =
+    b?.email ??
+    b?.customerEmail ??
+    b?.guestEmail ??
+    b?.customer?.email ??
+    b?.customer?.email_address ??
+    b?.customer_email ??
+    b?.emailAddress ??
+    '';
+  return String(raw ?? '').trim();
+};
+
+const getStayFrom = (b: any): string => {
+  const direct =
+    b?.stay?.from ??
+    b?.stay?.From ??
+    b?.from ??
+    b?.checkIn ??
+    b?.CheckIn ??
+    b?.checkin ??
+    b?.check_in ??
+    '';
+  if (direct) return direct;
+  const stayDuration = String(b?.stayDuration ?? b?.stay_duration ?? '');
+  if (stayDuration.includes(' - ')) return stayDuration.split(' - ')[0];
+  if (stayDuration.includes('-')) return stayDuration.split('-')[0].trim();
+  return '';
+};
+
+const getStayTo = (b: any): string => {
+  const direct =
+    b?.stay?.to ??
+    b?.stay?.To ??
+    b?.to ??
+    b?.checkOut ??
+    b?.CheckOut ??
+    b?.checkout ??
+    b?.check_out ??
+    '';
+  if (direct) return direct;
+  const stayDuration = String(b?.stayDuration ?? b?.stay_duration ?? '');
+  if (stayDuration.includes(' - ')) return stayDuration.split(' - ')[1];
+  if (stayDuration.includes('-')) return stayDuration.split('-')[1]?.trim() ?? '';
+  return '';
+};
+
 // ✅ map response from backend -> Guest[]
 const mapApiGuestsToUi = (raw: any): Guest[] => {
   const list = raw?.data ?? raw?.guests ?? raw ?? [];
@@ -511,6 +629,11 @@ const mapApiGuestsToUi = (raw: any): Guest[] => {
       dateOfBirth: g.details?.dateOfBirth ?? g.date_of_birth ?? g.dateOfBirth ?? '',
       documentNumber: g.details?.documentNumber ?? g.id_number ?? g.documentNumber ?? '',
       currentAddress: g.details?.currentAddress ?? g.current_address ?? g.currentAddress ?? '',
+      dateOfArrival: g.details?.dateOfArrival ?? g.date_of_arrival ?? g.dateOfArrival ?? '',
+      visaType: g.details?.visaType ?? g.visa_type ?? g.visaType ?? '',
+      stayExpiryDate: g.details?.stayExpiryDate ?? g.stay_expiry_date ?? g.stayExpiryDate ?? '',
+      pointOfEntry: g.details?.pointOfEntry ?? g.point_of_entry ?? g.pointOfEntry ?? '',
+      tmCardNumber: g.details?.tmCardNumber ?? g.tm_card_number ?? g.tmCardNumber ?? '',
     };
 
     const docTypeRaw = (g.documentType ?? g.id_type ?? '').toString().toUpperCase();
@@ -605,13 +728,19 @@ const isMeaningfulGuest = (g: Guest) => {
     !!String(d.nationality ?? '').trim() ||
     !!String(d.gender ?? '').trim() ||
     !!String(d.dateOfBirth ?? '').trim() ||
-    !!String(d.currentAddress ?? '').trim()
+    !!String(d.currentAddress ?? '').trim() ||
+    !!String(d.dateOfArrival ?? '').trim() ||
+    !!String(d.visaType ?? '').trim() ||
+    !!String(d.stayExpiryDate ?? '').trim() ||
+    !!String(d.pointOfEntry ?? '').trim() ||
+    !!String(d.tmCardNumber ?? '').trim()
   );
 };
 
 
 const GuestListScreen: React.FC<GuestListScreenProps> = ({
   guests: initialGuests = [],
+  booking,
   token: propToken = null,
   bookingId,
   bookingRoomId,
@@ -625,6 +754,7 @@ const GuestListScreen: React.FC<GuestListScreenProps> = ({
   isReadOnly = false
 }) => {
   const { t } = useTranslation();
+  const { language, setLanguage } = useLanguage();
   const location = useLocation();
 
   const fetchedRef = useRef(false);
@@ -641,6 +771,9 @@ const GuestListScreen: React.FC<GuestListScreenProps> = ({
 
   const [selectedGuestIds, setSelectedGuestIds] = useState<string[]>([]);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [usedCacheForReadOnly, setUsedCacheForReadOnly] = useState(false);
+  const [isLangOpen, setIsLangOpen] = useState(false);
+  const langDropdownRef = useRef<HTMLDivElement>(null);
 
   const [pendingConsentLogs, setPendingConsentLogs] = useState<PendingConsentItem[]>([]);
   const [deletingSelected, setDeletingSelected] = useState(false);
@@ -654,7 +787,7 @@ const GuestListScreen: React.FC<GuestListScreenProps> = ({
     ? deleteSelectedLabelRaw
     : (t('buttons.deleteSelectedGuests') !== 'buttons.deleteSelectedGuests'
       ? t('buttons.deleteSelectedGuests')
-      : 'Delete Selected');
+      : 'DELETE SELECTED GUEST(S)');
 
   // bookingId from state > prop
   const { bookingId: bookingIdFromState } = (location.state || {}) as { bookingId?: number };
@@ -686,6 +819,17 @@ const GuestListScreen: React.FC<GuestListScreenProps> = ({
   const isBookingInfoCompleted =
     String(bookingInfoStatus ?? '').toLowerCase() === 'completed';
   const shouldShowImages = !isReadOnly || isBookingInfoCompleted;
+  const bookingEmail = useMemo(() => getBookingEmail(bookingDetail), [bookingDetail]);
+  const stayFromRaw = useMemo(
+    () => getStayFrom(bookingDetail ?? booking),
+    [bookingDetail, booking]
+  );
+  const stayToRaw = useMemo(
+    () => getStayTo(bookingDetail ?? booking),
+    [bookingDetail, booking]
+  );
+  const stayFromFormatted = useMemo(() => formatDateTime(stayFromRaw), [stayFromRaw]);
+  const stayToFormatted = useMemo(() => formatDateTime(stayToRaw), [stayToRaw]);
 
   // ✅ FIX: bookingId เปลี่ยน -> reset state กันของเก่าค้าง
   useEffect(() => {
@@ -695,7 +839,18 @@ const GuestListScreen: React.FC<GuestListScreenProps> = ({
     setLoading(false);
     setIsEditing(false);
     setSelectedGuestIds([]);
+    setUsedCacheForReadOnly(false);
   }, [effectiveBookingId, isReadOnly, location.key]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (langDropdownRef.current && !langDropdownRef.current.contains(event.target as Node)) {
+        setIsLangOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   useEffect(() => {
     if (!effectiveBookingId) return;
@@ -770,7 +925,10 @@ const GuestListScreen: React.FC<GuestListScreenProps> = ({
           bookingResp?.data?.bookingInfoStatus ??
           bookingResp?.data?.booking_info_status ??
           null;
-        if (mounted) setBookingInfoStatus(status ? String(status) : null);
+        if (mounted) {
+          setBookingInfoStatus(status ? String(status) : null);
+          if (!bookingDetail) setBookingDetail(unwrapBooking(bookingResp));
+        }
       } catch {
         if (mounted) setBookingInfoStatus(null);
       }
@@ -780,7 +938,7 @@ const GuestListScreen: React.FC<GuestListScreenProps> = ({
     return () => {
       mounted = false;
     };
-  }, [tokenUsed, bookingRoomIdUsed]);
+  }, [tokenUsed, bookingRoomIdUsed, bookingDetail]);
 
   useEffect(() => {
     const next =
@@ -1037,8 +1195,13 @@ const handleUpdateGuestDetails = (guestId: string, details: Guest["details"]) =>
             }
           }
           if (isReadOnly) {
-            setGuests(normalizeGuestsForDisplay(backendMapped)); // แสดงผลข้อมูลจาก backend เท่านั้น
-            return;
+            const cached = loadGuestCache(bid, bookingRoomIdUsed);
+            if (cached && cached.length > 0) {
+              setUsedCacheForReadOnly(true);
+              setGuests(normalizeGuestsForDisplay(cached)); // แสดงผลข้อมูลจาก cache ล่าสุด
+              return;
+            }
+            setUsedCacheForReadOnly(false);
           }
 
           const cached = loadGuestCache(bid, bookingRoomIdUsed); // โหลดข้อมูลจาก cache
@@ -1078,8 +1241,13 @@ const handleUpdateGuestDetails = (guestId: string, details: Guest["details"]) =>
             }
           }
           if (isReadOnly) {
-            setGuests(normalizeGuestsForDisplay(backendMapped)); // แสดงผลข้อมูลจาก backend เท่านั้น
-            return;
+            const cached = loadGuestCache(bookingIdNum2, bookingRoomIdUsed);
+            if (cached && cached.length > 0) {
+              setUsedCacheForReadOnly(true);
+              setGuests(normalizeGuestsForDisplay(cached)); // แสดงผลข้อมูลจาก cache ล่าสุด
+              return;
+            }
+            setUsedCacheForReadOnly(false);
           }
 
           const cached = loadGuestCache(bookingIdNum2, bookingRoomIdUsed);
@@ -1245,7 +1413,7 @@ const handleUpdateGuestDetails = (guestId: string, details: Guest["details"]) =>
   // ✅ FIX: ตัวนี้ใช้ render จริง (ViewGuests = isReadOnly)
   const displayGuests = useMemo(() => {
     let normalized = normalizeGuestsForDisplay(guests);
-    if (isReadOnly && bookingRoomIdUsed) {
+    if (isReadOnly && bookingRoomIdUsed && !usedCacheForReadOnly) {
       const hasRoomTag = normalized.some((g) => {
         const v = toNumberOrUndef((g as any).bookingRoomId ?? (g as any).booking_room_id);
         return v !== undefined;
@@ -1275,7 +1443,7 @@ const handleUpdateGuestDetails = (guestId: string, details: Guest["details"]) =>
 
     if (isReadOnly) return aligned; // โหมดดูอย่างเดียวให้โชว์จาก DB ตามจริง
     return aligned.filter(isMeaningfulGuest); // กรองข้อมูลที่มีการกรอกจริง
-  }, [guests, isReadOnly, bookingDetail, bookingRoomIdUsed]);
+  }, [guests, isReadOnly, bookingDetail, bookingRoomIdUsed, usedCacheForReadOnly]);
 
   // ✅ ลบผู้เข้าพักที่เลือก (ลบจาก state + cache + แจ้ง parent)
  // เมื่อมีการลบหรือแก้ไขข้อมูล
@@ -1379,6 +1547,9 @@ const handleConfirmDeleteSelected = async () => {
                 onCaptureDocument={() => onCaptureDocument(guest.id)}
                 onUpdateDetails={(details) => handleUpdateGuestDetails(guest.id, details)}
                 isReadOnly={isReadOnly}
+                mainGuestEmail={bookingEmail}
+                stayFrom={stayFromFormatted}
+                stayTo={stayToFormatted}
               />
             ))}
           </div>
@@ -1418,7 +1589,9 @@ const handleConfirmDeleteSelected = async () => {
           </div>
         )}
 
-        <p className={guestListScreenStyles.footerText}>{t('guestList.footerText')}</p>
+        {!isReadOnly && (
+          <p className={guestListScreenStyles.footerText}>{t('guestList.footerText')}</p>
+        )}
 
         <div className={guestListScreenStyles.poweredByContainer}>
           <span>{t('footer.poweredBy')}</span>
@@ -1430,6 +1603,37 @@ const handleConfirmDeleteSelected = async () => {
       {/* ✅ Delete Confirm Modal */}
       {showDeleteConfirm && (
         <div className="fixed inset-0 z-50 flex flex-col bg-white">
+          <div className="absolute right-6 top-6" ref={langDropdownRef}>
+            <button
+              onClick={() => setIsLangOpen(!isLangOpen)}
+              className="flex items-center space-x-1 text-gray-600 font-semibold hover:text-black transition-colors"
+            >
+              <span>{language.toUpperCase()}</span>
+              <ChevronDownIcon className="w-4 h-4" />
+            </button>
+            {isLangOpen && (
+              <div className="absolute right-0 mt-2 w-32 bg-white rounded-lg shadow-xl border border-gray-100 z-20">
+                <button
+                  onClick={() => {
+                    setLanguage('en');
+                    setIsLangOpen(false);
+                  }}
+                  className="px-4 py-2 text-left w-full text-gray-700 hover:bg-gray-50"
+                >
+                  English
+                </button>
+                <button
+                  onClick={() => {
+                    setLanguage('th');
+                    setIsLangOpen(false);
+                  }}
+                  className="px-4 py-2 text-left w-full text-gray-700 hover:bg-gray-50"
+                >
+                  ไทย
+                </button>
+              </div>
+            )}
+          </div>
           <div className="pt-6 px-6 text-center">
             <h2 className="text-lg font-bold tracking-wide">{t('guestList.deleteTitle')}</h2>
           </div>
@@ -1468,12 +1672,13 @@ const handleConfirmDeleteSelected = async () => {
               onClick={handleConfirmDeleteSelected}
               disabled={selectedGuestIds.length === 0 || deletingSelected}
             >
-              {deletingSelected ? 'DELETING...' : 'CONFIRM (DELETE)'}
+              {deletingSelected ? (t('buttons.deleting') || 'DELETING...') : (t('buttons.confirm') || 'CONFIRM')}
             </Button>
           </div>
 
-          <div className="pb-4 text-center text-xs text-gray-400">
-            {t('footer.poweredBy')}
+          <div className="pb-4 flex items-center justify-center space-x-1 text-gray-400 text-xs">
+            <span>{t('footer.poweredBy')}</span>
+            <CloudIcon className="h-4 w-auto text-black" />
           </div>
         </div>
       )}

@@ -526,6 +526,9 @@ const PostCheckinDetailsScreen: React.FC<PostCheckinDetailsScreenProps> = ({
 
           {qrUrl && (
             <div className="rounded-2xl border border-gray-200 bg-slate-50 p-4 text-center space-y-3">
+              <p className="text-sm md:text-base font-semibold text-gray-700">
+                {t('postCheckin.qrCodeLabel') || 'Reservation Details QR Code'}
+              </p>
               <div className="flex justify-center">
                 <QRCodeCanvas value={qrUrl} size={160} bgColor="#ffffff" fgColor="#000000" />
               </div>
@@ -658,7 +661,11 @@ const PostCheckinDetailsScreen: React.FC<PostCheckinDetailsScreenProps> = ({
 
       <div className="px-4 pb-6">
       <div className="mx-auto w-full max-w-[360px] md:max-w-[600px] lg:max-w-[720px]">
-          <Button onClick={onCheckout} variant="danger">
+          <Button
+            onClick={onCheckout}
+            variant="outline"
+            className="border-red-500 text-red-600 hover:bg-red-50 focus:ring-red-500"
+          >
             {t('buttons.checkout') || 'CHECK OUT'}
           </Button>
         </div>

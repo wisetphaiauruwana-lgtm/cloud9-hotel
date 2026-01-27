@@ -111,9 +111,11 @@ const FaceCaptureScreen: React.FC<FaceCaptureScreenProps> = ({ guest, onCapture,
           <p className={styles.overlayText}>{t('faceCapture.saved')}</p>
         </div>
       )}
-      <Header onBack={onBack} />
+      <Header onBack={onBack} showLogo={false} />
       <main className={styles.main}>
-        <p className={styles.prompt}>{t('faceCapture.title')}</p>
+        {!capturedImage && (
+          <p className={styles.prompt}>{t('faceCapture.title')}</p>
+        )}
         <div className={styles.videoContainer}>
           {capturedImage ? (
              <img src={capturedImage} alt="Captured face" className={styles.video} />

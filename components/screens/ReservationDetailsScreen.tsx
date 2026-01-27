@@ -7,7 +7,7 @@ import Button from '../ui/Button';
 import { useTranslation } from '../../hooks/useTranslation';
 import { apiService } from '../../services/apiService';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { CloudIcon, EditIcon, LocationIcon, PhoneIcon } from '../icons/Icons';
+import { EditIcon, LocationIcon, PhoneIcon } from '../icons/Icons';
 
 interface ReservationDetailsScreenProps {
   booking?: Booking | null;
@@ -622,7 +622,11 @@ const ReservationDetailsScreen: React.FC<ReservationDetailsScreenProps> = ({
       <Header onBack={onBack} compact showLogo={false} showBorder={false} />
       <main className={styles.main}>
         <div className={styles.brand}>
-          <CloudIcon className="w-32 h-32 md:w-36 md:h-36" />
+          <img
+            src="/cloud9-logo.png"
+            alt="cloud9 logo"
+            className="w-32 h-32 md:w-36 md:h-36 object-contain"
+          />
         </div>
         <div className={styles.titleRow}>
           <h1 className={styles.title}>{t('reservationDetails.title') || 'Reservation Details'}</h1>

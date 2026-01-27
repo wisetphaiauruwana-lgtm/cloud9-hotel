@@ -172,11 +172,35 @@ const RoomAccessInformationScreen: React.FC<
 
   const rooms = roomsFromApi ?? booking?.rooms ?? [];
 
+  const resolveRoomFloor = (r: any): string => {
+    const roomNumber =
+      (r?.room?.roomNumber ?? r?.roomNumber ?? r?.room?.room_code ?? r?.room_code ?? '').toString();
+    const direct =
+      (r?.room?.floor ??
+        r?.floor ??
+        r?.room?.level ??
+        r?.level ??
+        r?.room?.floorNumber ??
+        r?.floorNumber ??
+        r?.room?.floor_number ??
+        r?.floor_number ??
+        r?.room?.roomFloor ??
+        r?.roomFloor ??
+        (booking as any)?.room?.floor ??
+        '').toString().trim();
+    if (direct) return direct;
+    const match = roomNumber.match(/\d+/);
+    return match ? match[0].charAt(0) : '';
+  };
+
+  const formatFloorLabel = (floor: string) => (floor ? `${floor}st Floor` : '-');
+
   const accessCodeItems = rooms
     .map((r: any) => {
       const roomNumber = (r?.room?.roomNumber ?? r?.roomNumber ?? r?.room?.room_code ?? r?.room_code ?? '-').toString();
       const code = (r?.accessCode ?? r?.access_code ?? r?.room?.accessCode ?? r?.room?.access_code ?? '').toString().trim();
-      return { roomNumber, code };
+      const floor = resolveRoomFloor(r);
+      return { roomNumber, code, floor };
     })
     .filter((item) => item.code);
 
@@ -252,8 +276,8 @@ const RoomAccessInformationScreen: React.FC<
                   value={item.roomNumber}
                 />
                 <DetailItem
-                  label={t('checkinComplete.accessCode') || 'Access Code'}
-                  value={item.code}
+                  label={t('checkinComplete.floor') || 'Floor'}
+                  value={formatFloorLabel(item.floor)}
                 />
               </div>
             ))
@@ -264,12 +288,17 @@ const RoomAccessInformationScreen: React.FC<
                 r.room?.roomNumber ??
                 roomAny.roomNumber ??
                 '-';
+              const floor = resolveRoomFloor(r);
 
               return (
                 <div key={idx} className={screenStyles.roomBlock}>
                   <DetailItem
                     label={t('checkinComplete.roomNumber') || 'Room Number'}
                     value={roomNumber}
+                  />
+                  <DetailItem
+                    label={t('checkinComplete.floor') || 'Floor'}
+                    value={formatFloorLabel(floor)}
                   />
                 </div>
               );

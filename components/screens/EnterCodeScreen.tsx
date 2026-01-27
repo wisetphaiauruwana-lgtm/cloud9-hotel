@@ -7,7 +7,6 @@ import { AlertCircleIcon, CheckCircleIcon } from '../icons/Icons';
 import { useTranslation } from '../../hooks/useTranslation';
 import { apiService } from '../../services/apiService'; // <-- ใช้ apiService
 import { useNavigate } from 'react-router-dom';
-import { CloudIcon } from '../icons/Icons';
 
 const CHECKIN_BOOKING_ID_KEY = "checkin_booking_id";
 
@@ -149,7 +148,7 @@ const EnterCodeScreen: React.FC<EnterCodeScreenProps> = ({ onSubmit, onBack, err
 
       if (token) {
         setIsValid(true);
-        setMessage("Booking code is correct!");
+        setMessage("Booking code is correct! Proceeding to the next step.");
 
         // ⭐ เก็บ token
         localStorage.setItem('checkin_token', String(token));
@@ -193,7 +192,11 @@ const EnterCodeScreen: React.FC<EnterCodeScreenProps> = ({ onSubmit, onBack, err
         <form onSubmit={handleSubmit} className={styles.form}>
           <div className={styles.inputContainer}>
             <div className={styles.brand}>
-              <CloudIcon className="w-32 h-32 md:w-36 md:h-36" />
+              <img
+                src="/cloud9-logo.png"
+                alt="cloud9 logo"
+                className="w-32 h-32 md:w-36 md:h-36 object-contain"
+              />
             </div>
             <h1 className={styles.title}>{t('enterCode.title') || "ENTER YOUR CONFIRMATION CODE"}</h1>
 

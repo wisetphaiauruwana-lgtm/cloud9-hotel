@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { DocumentType, ExtractedData } from '../../types';
 import Button from '../ui/Button';
-import { ImageIcon, CameraIcon, CheckCircleIcon } from '../icons/Icons';
+import { CameraIcon, CheckCircleIcon } from '../icons/Icons';
 import { useTranslation } from '../../hooks/useTranslation';
 import { apiService } from '../../services/apiService';
 import MainLayout from '../layout/MainLayout';
@@ -12,19 +12,8 @@ interface DocumentCaptureScreenProps {
   documentType: DocumentType;
 }
 
-type CaptureMode = 'camera' | 'upload';
-
 const imageToPureBase64 = (dataUrl: string): string =>
   dataUrl.split(',')[1];
-
-const fileToBase64 = (file: File): Promise<string> =>
-  new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () =>
-      resolve((reader.result as string).split(',')[1]);
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
 
 const DocumentCaptureScreen: React.FC<DocumentCaptureScreenProps> = ({
   onCapture,
@@ -35,10 +24,8 @@ const DocumentCaptureScreen: React.FC<DocumentCaptureScreenProps> = ({
 
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
 
-  const [mode, setMode] = useState<CaptureMode>('camera');
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [isImageCaptured, setIsImageCaptured] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -68,10 +55,10 @@ const DocumentCaptureScreen: React.FC<DocumentCaptureScreenProps> = ({
   }, []);
 
   useEffect(() => {
-    if (mode === 'camera' && !capturedImage) startCamera();
+    if (!capturedImage) startCamera();
     else stopCamera();
     return stopCamera;
-  }, [mode, capturedImage, startCamera, stopCamera]);
+  }, [capturedImage, startCamera, stopCamera]);
 
   // ================= Capture logic =================
 
@@ -111,29 +98,6 @@ const DocumentCaptureScreen: React.FC<DocumentCaptureScreenProps> = ({
     setIsImageCaptured(true);
 
     await submitImage(imageToPureBase64(img));
-  };
-
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    const preview = URL.createObjectURL(file);
-    setCapturedImage(preview);
-    setIsImageCaptured(true);
-
-    const base64 = await fileToBase64(file);
-    await submitImage(base64);
-  };
-
-  const reset = () => {
-    if (capturedImage?.startsWith('blob:')) {
-      URL.revokeObjectURL(capturedImage);
-    }
-    setCapturedImage(null);
-    setIsImageCaptured(false);
-    setStatusMessage('');
-    if (fileInputRef.current) fileInputRef.current.value = '';
-    if (mode === 'camera') startCamera();
   };
 
   // ================= UI =================
@@ -177,79 +141,41 @@ const DocumentCaptureScreen: React.FC<DocumentCaptureScreenProps> = ({
           : t('documentCapture.promptPassport')}
       </h2>
 
-      <div className="flex space-x-2 bg-gray-100 p-2 rounded-full">
-        <button
-          onClick={() => { setMode('camera'); reset(); }}
-          className={`px-4 py-2 rounded-full ${mode === 'camera' ? 'bg-white shadow' : ''}`}
-        >
-          <CameraIcon className="inline-block w-5 h-5 mr-1" />
-          Capture
-        </button>
-
-        <button
-          onClick={() => { setMode('upload'); reset(); }}
-          className={`px-4 py-2 rounded-full ${mode === 'upload' ? 'bg-white shadow' : ''}`}
-        >
-          <ImageIcon className="inline-block w-5 h-5 mr-1" />
-          Upload
-        </button>
+      {/* กล้อง */}
+      <div
+        className="
+          w-full
+          max-w-[360px] md:max-w-[600px] lg:max-w-[720px]
+          aspect-[85.6/54]
+          bg-gray-100
+          rounded-lg
+          overflow-hidden
+        "
+      >
+        <video
+          ref={videoRef}
+          autoPlay
+          playsInline
+          className="w-full h-full object-cover"
+        />
       </div>
 
-      {mode === 'camera' ? (
-        <>
-          {/* กล้อง */}
-          <div
-            className="
-              w-full
-              max-w-[360px] md:max-w-[600px] lg:max-w-[720px]
-              aspect-[85.6/54]
-              bg-gray-100
-              rounded-lg
-              overflow-hidden
-            "
-          >
-            <video
-              ref={videoRef}
-              autoPlay
-              playsInline
-              className="w-full h-full object-cover"
-            />
-          </div>
+      {/* canvas สำหรับ capture */}
+      <canvas ref={canvasRef} className="hidden" />
 
-          {/* canvas สำหรับ capture */}
-          <canvas ref={canvasRef} className="hidden" />
-
-          {/* ปุ่มถ่ายรูป (ดันลงชัดเจน) */}
-          <button
-            onClick={handleCameraCapture}
-            className="
-              w-20 h-20
-              mt-14 sm:mt-16
-              rounded-full
-              border-4 border-black
-              flex items-center justify-center
-            "
-          >
-            <div className="w-14 h-14 rounded-full bg-black" />
-          </button>
-        </>
-      ) : (
-        <>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={handleFileChange}
-          />
-          <label
-            className="px-4 py-2 bg-gray-100 rounded-lg cursor-pointer"
-            onClick={() => fileInputRef.current?.click()}
-          >
-            Select File
-          </label>
-        </>
-      )}
+      {/* ปุ่มถ่ายรูป (ดันลงชัดเจน) */}
+      <button
+        onClick={handleCameraCapture}
+        className="
+          w-20 h-20
+          mt-14 sm:mt-16
+          rounded-full
+          border-4 border-black
+          flex items-center justify-center
+        "
+      >
+        <div className="w-14 h-14 rounded-full bg-black" />
+      </button>
     </div>
   );
 

@@ -41,11 +41,11 @@ const CheckoutScreen: React.FC<CheckoutScreenProps> = ({ onConfirm, onCancel }) 
 
       </main>
       <div className={styles.footer}>
-        <Button onClick={onConfirm} variant="danger">
-            {t('buttons.confirmCheckout')}
-        </Button>
         <Button onClick={onCancel} variant="secondary">
-            {t('buttons.cancel')}
+          {t('buttons.cancel')}
+        </Button>
+        <Button onClick={onConfirm} variant="primary">
+          {t('buttons.confirmCheckout')}
         </Button>
       </div>
       <Footer />
