@@ -2,7 +2,7 @@ import React from 'react';
 
 export const CloudIcon = ({ className = 'w-6 h-6' }: { className?: string }) => (
   <img
-    src="/cloud9-logo.png"
+    src="/image.png"
     alt="logo"
     className={`${className} object-contain`}
   />

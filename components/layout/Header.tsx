@@ -1,6 +1,6 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { ArrowLeftIcon, CloudIcon, ChevronDownIcon } from '../icons/Icons';
+import { ArrowLeftIcon, ChevronDownIcon } from '../icons/Icons';
 import { useLanguage } from '../../context/LanguageContext';
 import { useTranslation } from '../../hooks/useTranslation';
 
@@ -71,7 +71,11 @@ const Header: React.FC<HeaderProps> = ({
       )}
       {showLogo && (
         <div className={styles.logoContainer}>
-          <CloudIcon className={logoClassName || "w-32 h-32 md:w-36 md:h-36"} />
+          <img
+            src="/cloud9-logo.png"
+            alt="cloud9 logo"
+            className={`${logoClassName || "w-32 h-32 md:w-36 md:h-36"} object-contain`}
+          />
         </div>
       )}
 
