@@ -1086,12 +1086,12 @@ const App: React.FC = () => {
         setBooking(prev => {
           const prevB = prev ?? ({} as Booking);
 
-          const merged: Booking = {
-            ...prevB,
-            ...updatedBooking,
-            dbId: bookingId,
-            checkinCompleted: true,
-            __alreadyCheckedIn: true,
+        const merged = {
+          ...prevB,
+          ...updatedBooking,
+          dbId: bookingId,
+          checkinCompleted: true,
+          __alreadyCheckedIn: true,
 
           // ✅ ถ้า updated ไม่มี email/mainGuest ให้ใช้ของเดิม
           email:
@@ -1110,7 +1110,7 @@ const App: React.FC = () => {
             (prevB as any)?.guestName ??
             (prevB as any)?.customerName ??
             '',
-        };
+        } as Booking;
 
         try {
           localStorage.setItem("checkedin_booking", JSON.stringify(merged));
