@@ -1094,7 +1094,15 @@ const GuestListScreen: React.FC<GuestListScreenProps> = ({
     [guests]
   );
 
-  const canAddGuest = useMemo(() => guests.length < 5, [guests]);
+  const roomGuestCount = useMemo(() => {
+    if (!bookingRoomIdUsed) return guests.length;
+    return guests.filter((g: any) => {
+      const v = toNumberOrUndef((g as any).bookingRoomId ?? (g as any).booking_room_id);
+      return v === bookingRoomIdUsed;
+    }).length;
+  }, [guests, bookingRoomIdUsed]);
+
+  const canAddGuest = useMemo(() => roomGuestCount < 5, [roomGuestCount]);
 
   const saveTimerRef = useRef<number | null>(null);
 
